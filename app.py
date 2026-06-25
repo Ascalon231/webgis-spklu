@@ -3,25 +3,30 @@ import pg8000.dbapi as pg
 from flask import Flask, jsonify, render_template, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
-# Initialize Limiter
+# Initialize Limiter with Upstash Redis / Vercel KV or memory fallback for serverless
+redis_url = os.getenv("REDIS_URL") or os.getenv("KV_URL")
+storage_uri = redis_url if redis_url else "memory://"
+
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
-    storage_uri="memory://"
+    storage_uri=storage_uri
 )
 
-# Database configuration from .env
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
+# Database configuration from .env (default to Supavisor transaction pooler port 6543)
+DB_HOST = os.getenv("DB_HOST", "aws-1-ap-southeast-2.pooler.supabase.com")
+DB_PORT = os.getenv("DB_PORT", "6543")
 DB_NAME = os.getenv("DB_NAME", "postgres")
-DB_USER = os.getenv("DB_USER", "postgres")
+DB_USER = os.getenv("DB_USER", "postgres.cnevatrggzdvcxxstzjw")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 def get_db_connection():
@@ -37,8 +42,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     try:
-        with open(os.path.join(app.root_path, 'templates', 'index.html'), 'r', encoding='utf-8') as f:
-            return f.read()
+        return render_template('index.html')
     except Exception as e:
         return f"Error loading index.html: {str(e)}", 500
 
@@ -242,8 +246,7 @@ def get_stats():
 @app.route('/analytics')
 def analytics():
     try:
-        with open(os.path.join(app.root_path, 'templates', 'analytics.html'), 'r', encoding='utf-8') as f:
-            return f.read()
+        return render_template('analytics.html')
     except Exception as e:
         return f"Error loading analytics.html: {str(e)}", 500
 

@@ -1403,57 +1403,148 @@
             }
         }
 
-        /* Responsive Mobile Styling (Widen Sidebar, Less Padding, Auto-Collapse UX) */
-        @media (max-width: 767px) {
+        /* Responsive Mobile Styling (Premium Bottom Sheet Layout & Touch Targets) */
+        @media (max-width: 768px) {
             #sidebar {
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 320px;
-                max-width: 88%;
-                height: 100vh;
-                z-index: 2000;
-                box-shadow: 10px 0 25px rgba(0, 0, 0, 0.4);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: fixed !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                top: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 50vh !important;
+                border-right: none !important;
+                border-top: 1px solid var(--border-glass) !important;
+                border-radius: 24px 24px 0 0 !important;
+                box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5) !important;
+                transform: translateY(0) !important;
+                z-index: 2000 !important;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
             #sidebar.collapsed {
-                width: 320px;
-                transform: translateX(-100%);
+                transform: translateY(100%) !important;
+                width: 100% !important;
+                box-shadow: none !important;
+            }
+            .logo-container {
+                display: none !important;
+            }
+            .sidebar-header {
+                padding: 8px 14px !important;
+                justify-content: flex-end !important;
+                border-bottom: none !important;
+                background: transparent !important;
+            }
+            .sidebar-tabs {
+                margin-bottom: 4px !important;
             }
             .sidebar-content {
-                padding: 10px 14px 20px 14px !important;
+                padding: 4px 14px 24px 14px !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            /* Hide search & filter overhead on other tabs to save space */
+            #sidebar.active-tab-tab-rute .search-section,
+            #sidebar.active-tab-tab-rute .layer-control-panel,
+            #sidebar.active-tab-tab-analitik .search-section,
+            #sidebar.active-tab-tab-analitik .layer-control-panel {
+                display: none !important;
+            }
+            /* Grid layout for search section in lokasi tab to save height */
+            #sidebar.active-tab-tab-lokasi .search-section {
+                padding: 8px 14px !important;
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+            }
+            #sidebar.active-tab-tab-lokasi .search-section div[style*="font-size: 11px"] {
+                display: none !important; /* Hide label text on mobile */
+            }
+            .search-box {
+                grid-column: span 2 !important;
+                margin-bottom: 0 !important;
+            }
+            #province-filter {
+                grid-column: 1 !important;
+                margin-bottom: 0 !important;
+            }
+            #provider-filter {
+                grid-column: 2 !important;
+                margin-bottom: 0 !important;
+            }
+            .filter-select {
+                height: 42px !important;
+                font-size: 13.5px !important;
+                padding: 8px 12px !important;
+            }
+            .layer-control-panel {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                padding: 8px 14px !important;
+                gap: 12px !important;
+                background: rgba(255, 255, 255, 0.02) !important;
+                border-bottom: 1px solid var(--border-glass) !important;
+            }
+            .layer-toggle-item {
+                flex: 1 !important;
+                margin-bottom: 0 !important;
+                justify-content: space-between !important;
             }
             .route-setup-card {
-                padding: 12px !important;
+                padding: 14px !important;
+            }
+            .route-input-group label {
+                font-size: 11px !important;
             }
             .route-input-wrapper {
-                gap: 6px !important;
+                gap: 8px !important;
+                margin-top: 4px !important;
             }
             .route-action-btn {
-                width: 34px !important;
-                height: 34px !important;
+                width: 42px !important;
+                height: 42px !important;
+                font-size: 15px !important;
+                border-radius: 8px !important;
             }
             .route-input-wrapper input {
-                font-size: 12.5px !important;
-                padding: 8px 10px !important;
+                font-size: 13px !important;
+                padding: 10px 12px !important;
+                height: 42px !important;
             }
             .route-buttons-row {
-                flex-direction: column;
-                gap: 6px !important;
+                flex-direction: row !important;
+                gap: 10px !important;
+                margin-top: 18px !important;
             }
             .route-buttons-row button {
-                width: 100% !important;
+                flex: 1 !important;
+                width: auto !important;
+                height: 46px !important;
                 padding: 10px !important;
-                font-size: 13px !important;
+                font-size: 14px !important;
+                border-radius: 10px !important;
             }
             .sidebar-toggle-btn {
-                right: -32px;
-                width: 32px;
-                height: 56px;
-                border-radius: 0 10px 10px 0;
-                font-size: 16px;
-                background: #0a0f1e;
+                position: absolute !important;
+                left: 50% !important;
+                right: auto !important;
+                top: -30px !important;
+                transform: translateX(-50%) !important;
+                width: 64px !important;
+                height: 30px !important;
+                border-radius: 12px 12px 0 0 !important;
+                border: 1px solid var(--border-glass) !important;
+                border-bottom: none !important;
+                background: #0a0f1e !important;
+                color: var(--text-gray) !important;
+                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 9999 !important;
+                opacity: 0.95 !important;
             }
             #map {
                 width: 100vw;
@@ -1465,25 +1556,30 @@
             }
             /* Adjust legend placement on mobile */
             #map-legend {
-                bottom: 20px !important;
-                right: 20px !important;
+                bottom: calc(50vh + 15px) !important; /* Float above bottom sheet */
+                right: 15px !important;
                 left: auto !important;
-                max-width: 180px;
-                font-size: 11px;
+                max-width: 170px;
+                font-size: 10px;
                 padding: 8px 10px;
+                transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            #sidebar.collapsed ~ #map #map-legend {
+                bottom: 20px !important;
             }
             /* Adjust bottom sheet for routing list on mobile */
             #route-bottom-sheet {
-                left: 20px !important;
-                right: 20px !important;
-                bottom: 20px !important;
-                width: calc(100% - 40px) !important;
-                max-height: 35vh !important;
+                left: 15px !important;
+                right: 15px !important;
+                bottom: 15px !important;
+                width: calc(100% - 30px) !important;
+                max-height: 38vh !important;
                 height: auto !important;
                 flex-direction: column;
                 align-items: stretch;
                 padding: 12px;
                 gap: 8px;
+                z-index: 2100 !important; /* Stack above sidebar */
             }
             /* Adjust bottom sheet summary block for mobile */
             .sheet-summary-block {
@@ -1512,10 +1608,16 @@
                 width: 100%;
                 padding-bottom: 4px;
             }
-            /* Fix modal size on mobile */
+            /* Fix and optimize modal size and readability on mobile */
             .modal-card {
-                width: 95% !important;
-                max-height: 90vh !important;
+                width: 92% !important;
+                max-height: 80vh !important;
+                border-radius: 20px !important;
+            }
+            .modal-card > div[style*="overflow-y: auto"] {
+                padding: 20px 16px !important;
+                font-size: 13.5px !important;
+                line-height: 1.7 !important;
             }
         }
     </style>
@@ -1525,7 +1627,7 @@
     <div id="container">
 
         <!-- Sidebar Panel -->
-        <div id="sidebar">
+        <div id="sidebar" class="active-tab-tab-lokasi">
             <!-- Sidebar toggle button -->
             <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Sembunyikan/Tampilkan Menu">
                 <i class="fas fa-chevron-left" id="toggle-icon"></i>
@@ -2472,6 +2574,13 @@
                 }
             });
             
+            // Set active tab class on sidebar for CSS styling
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('active-tab-tab-lokasi', 'active-tab-tab-analitik', 'active-tab-tab-rute');
+                sidebar.classList.add('active-tab-' + targetTabId);
+            }
+            
             // Trigger charts rendering if Analitik tab is opened
             if (targetTabId === 'tab-analitik') {
                 setTimeout(initAnalyticsCharts, 50);
@@ -2712,31 +2821,32 @@
             
             const sidebar = document.getElementById('sidebar');
             const toggleIcon = document.getElementById('toggle-icon');
+            const isMobile = window.innerWidth < 768;
             
             if (mode === 'start') {
                 document.getElementById('btn-pick-start').classList.add('active');
                 map.getContainer().style.cursor = 'crosshair';
                 // Auto collapse sidebar on mobile to allow full screen picking
-                if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('collapsed')) {
+                if (isMobile && sidebar && !sidebar.classList.contains('collapsed')) {
                     sidebar.classList.add('collapsed');
-                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-up';
                     setTimeout(() => map.invalidateSize(), 300);
                 }
             } else if (mode === 'end') {
                 document.getElementById('btn-pick-end').classList.add('active');
                 map.getContainer().style.cursor = 'crosshair';
                 // Auto collapse sidebar on mobile to allow full screen picking
-                if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('collapsed')) {
+                if (isMobile && sidebar && !sidebar.classList.contains('collapsed')) {
                     sidebar.classList.add('collapsed');
-                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-up';
                     setTimeout(() => map.invalidateSize(), 300);
                 }
             } else {
                 map.getContainer().style.cursor = '';
                 // Auto expand sidebar on mobile when picking is complete
-                if (window.innerWidth < 768 && sidebar && sidebar.classList.contains('collapsed')) {
+                if (isMobile && sidebar && sidebar.classList.contains('collapsed')) {
                     sidebar.classList.remove('collapsed');
-                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-down';
                     setTimeout(() => map.invalidateSize(), 300);
                 }
             }
@@ -3726,10 +3836,11 @@
             
             toggleBtn.addEventListener('click', function() {
                 sidebar.classList.toggle('collapsed');
+                const isMobile = window.innerWidth < 768;
                 if (sidebar.classList.contains('collapsed')) {
-                    toggleIcon.className = 'fas fa-chevron-right';
+                    toggleIcon.className = isMobile ? 'fas fa-chevron-up' : 'fas fa-chevron-right';
                 } else {
-                    toggleIcon.className = 'fas fa-chevron-left';
+                    toggleIcon.className = isMobile ? 'fas fa-chevron-down' : 'fas fa-chevron-left';
                 }
                 // Invalidate Map size after CSS slide animation ends (300ms)
                 setTimeout(() => {

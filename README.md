@@ -25,20 +25,20 @@ Aplikasi ini menggunakan model arsitektur 3-tier spasial, menghubungkan data men
 
 ```mermaid
 graph TD
-    subgraph Data Acquisition & ETL
+    subgraph etl ["Data Acquisition & ETL"]
         RawData[Data Spasial Mentah: SHP / GeoJSON] --> |Standardisasi EPSG:4326| ETL[Proses ETL Spasial]
         Kemenhub[GIS Hub Kemenhub: Jaringan Jalan & Trans] --> ETL
         BPS[Peta Batas Wilayah BPS] --> ETL
     end
 
-    subgraph Database Spasial Cloud (Supabase)
+    subgraph db_cloud ["Database Spasial Cloud (Supabase)"]
         DB[(PostgreSQL + PostGIS)]
         ETL --> |Upload Data Tabel sebaran_spklu| DB
         DB --> |Spatial Indexing GIST| Index[Peningkatan Performa Spasial]
         DB --> |SQL Window Function Jittering| Jitter[Penguraian Koordinat Duplikat]
     end
 
-    subgraph Backend Application Server
+    subgraph app_server ["Backend Application Server"]
         API[Flask REST API Server]
         Limiter[Flask-Limiter: API Throttling]
         Router[OSRM Engine: Routing / Buffer]
@@ -46,7 +46,7 @@ graph TD
         API <--> Router
     end
 
-    subgraph Interactive Web Client
+    subgraph web_client ["Interactive Web Client"]
         UI[Leaflet.js Map Viewer]
         Chart[Chart.js: Dashboard Analitik]
     end
@@ -56,10 +56,10 @@ graph TD
     UI <--> Chart
     User([Pengguna Akhir]) <--> |Interaksi Peta / Kueri Rute| UI
 
-    style Database Spasial Cloud (Supabase) fill:#0c0f1d,stroke:#3ECF8E,stroke-width:2px;
-    style Backend Application Server fill:#1e2949,stroke:#60efff,stroke-width:2px;
-    style Interactive Web Client fill:#151e33,stroke:#ffd700,stroke-width:2px;
-    style Data Acquisition & ETL fill:#2a1b40,stroke:#a855f7,stroke-width:2px;
+    style db_cloud fill:#0c0f1d,stroke:#3ECF8E,stroke-width:2px;
+    style app_server fill:#1e2949,stroke:#60efff,stroke-width:2px;
+    style web_client fill:#151e33,stroke:#ffd700,stroke-width:2px;
+    style etl fill:#2a1b40,stroke:#a855f7,stroke-width:2px;
 ```
 
 ---

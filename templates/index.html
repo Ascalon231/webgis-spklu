@@ -1402,6 +1402,96 @@
                 transform: scale(1);
             }
         }
+
+        /* Responsive Mobile Styling */
+        @media (max-width: 767px) {
+            #sidebar {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 290px;
+                max-width: 85%;
+                height: 100vh;
+                z-index: 2000;
+                box-shadow: 10px 0 25px rgba(0, 0, 0, 0.4);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            #sidebar.collapsed {
+                width: 290px;
+                transform: translateX(-100%);
+            }
+            .sidebar-toggle-btn {
+                right: -32px;
+                width: 32px;
+                height: 56px;
+                border-radius: 0 10px 10px 0;
+                font-size: 16px;
+                background: #0a0f1e;
+            }
+            #map {
+                width: 100vw;
+                height: 100vh;
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: 1;
+            }
+            /* Adjust legend placement on mobile */
+            #map-legend {
+                bottom: 20px !important;
+                right: 20px !important;
+                left: auto !important;
+                max-width: 180px;
+                font-size: 11px;
+                padding: 8px 10px;
+            }
+            /* Adjust bottom sheet for routing list on mobile */
+            #route-bottom-sheet {
+                left: 20px !important;
+                right: 20px !important;
+                bottom: 20px !important;
+                width: calc(100% - 40px) !important;
+                max-height: 35vh !important;
+                height: auto !important;
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+                gap: 8px;
+            }
+            /* Adjust bottom sheet summary block for mobile */
+            .sheet-summary-block {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                padding-bottom: 8px;
+                padding-right: 0 !important;
+                margin-right: 0 !important;
+            }
+            #sheet-dist-val {
+                font-size: 14px !important;
+                margin-bottom: 0 !important;
+            }
+            #sheet-time-val {
+                margin-bottom: 0 !important;
+            }
+            #btn-toggle-sheet {
+                width: auto !important;
+            }
+            .timeline-container {
+                overflow-x: auto;
+                width: 100%;
+                padding-bottom: 4px;
+            }
+            /* Fix modal size on mobile */
+            .modal-card {
+                width: 95% !important;
+                max-height: 90vh !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2029,7 +2119,7 @@
                                     weight = 1.2;
                             }
                         } else {
-                            weight = zoom >= 9 ? 2 : 1.2;
+                            weight = map.getZoom() >= 9 ? 2 : 1.2;
                         }
                         
                         return {

@@ -3004,11 +3004,14 @@
             const profile = document.getElementById('route-profile-select').value;
             let serviceUrl = 'https://routing.openstreetmap.de/routed-car/route/v1';
             let profileName = 'driving';
+            let excludeParam = null;
             
             if (profile === 'motorcycle') {
                 // Use the bicycle routing profile to avoid tollroads/motorways completely for motorcycles
                 serviceUrl = 'https://routing.openstreetmap.de/routed-bike/route/v1';
                 profileName = 'bicycle';
+            } else if (profile === 'car-avoid-toll') {
+                excludeParam = 'toll';
             }
             
             const router = routingControl.getRouter() || routingControl.router;
@@ -3025,6 +3028,18 @@
                 }
                 if (router.options.extraParams) {
                     delete router.options.extraParams.exclude;
+                }
+                
+                // Add exclude parameter for car-avoid-toll profile
+                if (excludeParam) {
+                    if (!router.options.routingOptions) router.options.routingOptions = {};
+                    router.options.routingOptions.exclude = excludeParam;
+                    
+                    if (!router.options.urlParameters) router.options.urlParameters = {};
+                    router.options.urlParameters.exclude = excludeParam;
+                    
+                    if (!router.options.extraParams) router.options.extraParams = {};
+                    router.options.extraParams.exclude = excludeParam;
                 }
             }
             

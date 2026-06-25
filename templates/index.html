@@ -1403,23 +1403,49 @@
             }
         }
 
-        /* Responsive Mobile Styling */
+        /* Responsive Mobile Styling (Widen Sidebar, Less Padding, Auto-Collapse UX) */
         @media (max-width: 767px) {
             #sidebar {
                 position: absolute;
                 left: 0;
                 top: 0;
                 bottom: 0;
-                width: 290px;
-                max-width: 85%;
+                width: 320px;
+                max-width: 88%;
                 height: 100vh;
                 z-index: 2000;
                 box-shadow: 10px 0 25px rgba(0, 0, 0, 0.4);
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             #sidebar.collapsed {
-                width: 290px;
+                width: 320px;
                 transform: translateX(-100%);
+            }
+            .sidebar-content {
+                padding: 10px 14px 20px 14px !important;
+            }
+            .route-setup-card {
+                padding: 12px !important;
+            }
+            .route-input-wrapper {
+                gap: 6px !important;
+            }
+            .route-action-btn {
+                width: 34px !important;
+                height: 34px !important;
+            }
+            .route-input-wrapper input {
+                font-size: 12.5px !important;
+                padding: 8px 10px !important;
+            }
+            .route-buttons-row {
+                flex-direction: column;
+                gap: 6px !important;
+            }
+            .route-buttons-row button {
+                width: 100% !important;
+                padding: 10px !important;
+                font-size: 13px !important;
             }
             .sidebar-toggle-btn {
                 right: -32px;
@@ -2684,14 +2710,35 @@
             pickingMode = mode;
             document.querySelectorAll('.route-action-btn').forEach(btn => btn.classList.remove('active'));
             
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
             if (mode === 'start') {
                 document.getElementById('btn-pick-start').classList.add('active');
                 map.getContainer().style.cursor = 'crosshair';
+                // Auto collapse sidebar on mobile to allow full screen picking
+                if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+                    setTimeout(() => map.invalidateSize(), 300);
+                }
             } else if (mode === 'end') {
                 document.getElementById('btn-pick-end').classList.add('active');
                 map.getContainer().style.cursor = 'crosshair';
+                // Auto collapse sidebar on mobile to allow full screen picking
+                if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+                    setTimeout(() => map.invalidateSize(), 300);
+                }
             } else {
                 map.getContainer().style.cursor = '';
+                // Auto expand sidebar on mobile when picking is complete
+                if (window.innerWidth < 768 && sidebar && sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.remove('collapsed');
+                    if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
+                    setTimeout(() => map.invalidateSize(), 300);
+                }
             }
         }
 

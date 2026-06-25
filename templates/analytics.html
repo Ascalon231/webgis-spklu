@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor Analitik & Sebaran SPKLU Nasional - Cas.in</title>
+    
+    <!-- SEO Optimization Meta Tags -->
+    <meta name="description" content="Analisis data statistik, perbandingan wilayah, dan kepadatan penduduk terhadap sebaran Stasiun Pengisian Kendaraan Listrik Umum (SPKLU) di Indonesia. Dibuat oleh Ripan Nursalam.">
+    <meta name="keywords" content="Analitik SPKLU, Statistik SPKLU, Rasio Kepadatan SPKLU, Grafik SPKLU, Data SPKLU Indonesia, Ripan Nursalam, WebGIS Dashboard">
+    <meta name="author" content="Ripan Nursalam">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0c0f1d;
+            --bg-card: rgba(30, 41, 73, 0.45);
+            --bg-input: rgba(18, 25, 47, 0.8);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-light: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-green: #00ff87;
+            --accent-cyan: #60efff;
+            --accent-yellow: #ffd700;
+            --accent-purple: #a78bfa;
+            --font-main: 'Inter', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(96, 239, 255, 0.05) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(0, 255, 135, 0.05) 0px, transparent 50%);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(12, 15, 29, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            color: var(--bg-dark);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 15px rgba(96, 239, 255, 0.4);
+        }
+
+        .header-title-container h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-nav-map {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .btn-nav-map:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+
+        /* KPI Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            transition: var(--transition);
+        }
+
+        .kpi-card:hover {
+            border-color: rgba(96, 239, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .kpi-info h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .kpi-unit {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-left: 5px;
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        /* Dashboard Sections Grid */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dashboard-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+        }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .box-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .box-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Charts Container inside dashboard box */
+        .charts-flex {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-flex {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-wrapper {
+            background: rgba(18, 25, 47, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .chart-title-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            flex-grow: 1;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Tables styling */
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13.5px;
+        }
+
+        th {
+            padding: 14px 16px;
+            background: rgba(18, 25, 47, 0.6);
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-light);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-cyan { background: rgba(96, 239, 255, 0.1); color: var(--accent-cyan); border: 1px solid rgba(96, 239, 255, 0.2); }
+        .badge-green { background: rgba(0, 255, 135, 0.1); color: var(--accent-green); border: 1px solid rgba(0, 255, 135, 0.2); }
+        .badge-purple { background: rgba(167, 139, 250, 0.1); color: var(--accent-purple); border: 1px solid rgba(167, 139, 250, 0.2); }
+
+        .number-col {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+
+        /* Paginated Data Section */
+        .data-section {
+            margin-top: 30px;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-item {
+            flex-grow: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .input-control {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-light);
+            font-family: var(--font-main);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .input-control-search {
+            padding-left: 40px;
+        }
+
+        .input-control:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(96, 239, 255, 0.15);
+        }
+
+        /* Pagination style */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-page {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-page:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .btn-page.active {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            color: var(--bg-dark);
+            border-color: transparent;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title-container">
+            <div class="header-logo">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+                <h1>Visualisasi Data & Analitik SPKLU</h1>
+                <p style="font-size: 11px; color: var(--text-muted);">Integrasi Spasial Jaringan Transportasi & Kependudukan</p>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="btn-nav btn-nav-map">
+                <i class="fas fa-map-marked-alt"></i> Peta WebGIS
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- KPI Cards Section -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Total SPKLU Nasional</h3>
+                    <div class="kpi-value" id="kpi-total">0<span class="kpi-unit">Stasiun</span></div>
+                </div>
+                <div class="kpi-icon" style="background: rgba(96, 239, 255, 0.15); color: var(--accent-cyan);">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Provinsi Terbanyak</h3>
+                    <div class="kpi-value" id="kpi-top-prov" style="font-size: 20px; line-height: 1.4;">-</div>
+                </div>
+                <div class="kpi-icon" style="background: rgba(0, 255, 135, 0.15); color: var(--accent-green);">
+                    <i class="fas fa-map"></i>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h3>Rasio SPKLU Tertinggi</h3>
+                    <div class="kpi-value" id="kpi-top-ratio" style="font-size: 20px; line-height: 1.4;">-</div>
+                </div>
+                <div class="kpi-icon" style="background: rgba(255, 215, 0, 0.15); color: var(--accent-yellow);">
+                    <i class="fas fa-users-viewfinder"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Charts & Density Ratio Table -->
+        <div class="dashboard-row">
+            <!-- Left Box: Charts -->
+            <div class="dashboard-box">
+                <div class="box-header">
+                    <h2 class="box-title"><i class="fas fa-chart-simple" style="color: var(--accent-cyan);"></i> Grafik Distribusi & Sebaran</h2>
+                </div>
+                <div class="charts-flex">
+                    <div class="chart-wrapper">
+                        <div class="chart-title-sub">Distribusi per Provinsi (Top 5)</div>
+                        <div class="chart-container">
+                            <canvas id="provinceChartFull"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <div class="chart-title-sub">Distribusi per Kota/Kabupaten (Top 5)</div>
+                        <div class="chart-container">
+                            <canvas id="cityChartFull"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Box: Density Table -->
+            <div class="dashboard-box">
+                <div class="box-header">
+                    <h2 class="box-title"><i class="fas fa-users" style="color: var(--accent-yellow);"></i> Kepadatan SPKLU (Rasio per 100K Penduduk)</h2>
+                    <div class="box-actions">
+                        <button id="download-density-btn" class="btn-action" onclick="downloadCSV('density')" style="display:none;">
+                            <i class="fas fa-download"></i> CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height: 320px;">
+                    <table id="density-table">
+                        <thead>
+                            <tr>
+                                <th>Kota / Kabupaten</th>
+                                <th>Penduduk</th>
+                                <th>SPKLU</th>
+                                <th>Per 100K</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Memuat data rasio...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Complete Paginated SPKLU Data Table -->
+        <div class="dashboard-box data-section">
+            <div class="box-header">
+                <h2 class="box-title"><i class="fas fa-table" style="color: var(--accent-purple);"></i> Tabel Data Lengkap SPKLU Indonesia</h2>
+                <div class="box-actions">
+                    <button id="download-spklu-btn" class="btn-action" onclick="downloadCSV('spklu')" style="display:none;">
+                        <i class="fas fa-file-csv"></i> Unduh Data (.csv)
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-container">
+                <div class="filter-item" style="flex-grow: 2;">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-filter" class="input-control input-control-search" placeholder="Cari nama stasiun SPKLU atau alamat...">
+                </div>
+                <div class="filter-item">
+                    <select id="prov-filter" class="input-control">
+                        <option value="">-- Semua Provinsi --</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select id="city-filter" class="input-control">
+                        <option value="">-- Semua Kota / Kabupaten --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table id="spklu-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">GID</th>
+                            <th>Nama Stasiun SPKLU</th>
+                            <th>Alamat Lengkap</th>
+                            <th>Kota / Kabupaten</th>
+                            <th>Provinsi</th>
+                            <th style="width: 180px;">Koordinat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="spklu-table-body">
+                        <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat basis data SPKLU...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info" id="pagination-info">
+                    Menampilkan 0 - 0 dari 0 data SPKLU
+                </div>
+                <div class="pagination-buttons" id="pagination-buttons">
+                    <!-- Buttons will be injected here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variables for data caching
+        let statsData = null;
+        let spkluList = [];
+        let filteredList = [];
+        
+        // Pagination state
+        let currentPage = 1;
+        const rowsPerPage = 50;
+
+        // Load data on start
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadStats();
+            await loadSPKLUList();
+            setupFilterListeners();
+        });
+
+        // Fetch Analytics Stats (KPI, charts, density table)
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                statsData = await res.json();
+
+                // 1. Set KPI Cards
+                document.getElementById('kpi-total').innerHTML = `${statsData.total} <span class="kpi-unit">Stasiun</span>`;
+                
+                if (statsData.provinces && statsData.provinces.length > 0) {
+                    const topProv = statsData.provinces[0];
+                    document.getElementById('kpi-top-prov').innerHTML = `${topProv.province} <span class="kpi-unit">(${topProv.count} Unit)</span>`;
+                }
+
+                if (statsData.densities && statsData.densities.length > 0) {
+                    const topRatio = statsData.densities[0];
+                    document.getElementById('kpi-top-ratio').innerHTML = `${topRatio.city} <span class="kpi-unit">(${topRatio.ratio} / 100K)</span>`;
+                }
+
+                // 2. Populate Density Table
+                populateDensityTable(statsData.densities);
+
+                // 3. Render Charts
+                renderCharts(statsData);
+
+            } catch (err) {
+                console.error("Gagal memuat analitik:", err);
+            }
+        }
+
+        // Fetch Complete list of SPKLU stations for the data table
+        async function loadSPKLUList() {
+            try {
+                const res = await fetch('/api/spklu/list');
+                spkluList = await res.json();
+                filteredList = [...spkluList];
+
+                // Populate filter dropdowns
+                populateFilterDropdowns();
+
+                // Draw Table Page 1
+                renderSPKLUTable();
+
+            } catch (err) {
+                console.error("Gagal memuat list data SPKLU:", err);
+                document.getElementById('spklu-table-body').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ff4a4a;">Gagal memuat data dari database. Silakan segarkan halaman.</td></tr>`;
+            }
+        }
+
+        // Render charts inside containers
+        function renderCharts(data) {
+            const topProvs = data.provinces.slice(0, 5);
+            const provLabels = topProvs.map(p => p.province);
+            const provCounts = topProvs.map(p => p.count);
+
+            const topCities = data.cities.slice(0, 5);
+            const cityLabels = topCities.map(c => c.city);
+            const cityCounts = topCities.map(c => c.count);
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Inter', size: 9 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Inter', size: 9 } }
+                    }
+                }
+            };
+
+            // Province Chart (Horizontal Bar)
+            const ctxProv = document.getElementById('provinceChartFull').getContext('2d');
+            new Chart(ctxProv, {
+                type: 'bar',
+                data: {
+                    labels: provLabels,
+                    datasets: [{
+                        data: provCounts,
+                        backgroundColor: 'rgba(96, 239, 255, 0.75)',
+                        borderColor: '#60efff',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    indexAxis: 'y'
+                }
+            });
+
+            // City Chart (Pie / Doughnut)
+            const ctxCity = document.getElementById('cityChartFull').getContext('2d');
+            new Chart(ctxCity, {
+                type: 'doughnut',
+                data: {
+                    labels: cityLabels,
+                    datasets: [{
+                        data: cityCounts,
+                        backgroundColor: [
+                            'rgba(0, 255, 135, 0.75)',
+                            'rgba(96, 239, 255, 0.75)',
+                            'rgba(255, 215, 0, 0.75)',
+                            'rgba(167, 139, 250, 0.75)',
+                            'rgba(244, 63, 94, 0.75)'
+                        ],
+                        borderColor: 'rgba(12, 15, 29, 0.8)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: '#9ca3af',
+                                boxWidth: 8,
+                                font: { family: 'Inter', size: 9 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render density table items
+        function populateDensityTable(densities) {
+            const tbody = document.querySelector('#density-table tbody');
+            tbody.innerHTML = '';
+
+            if (!densities || densities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Data tidak tersedia</td></tr>';
+                return;
+            }
+
+            densities.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.city}</strong></td>
+                    <td class="number-col">${row.population.toLocaleString('id-ID')}</td>
+                    <td class="number-col" style="color: var(--accent-cyan); font-weight:600;">${row.count}</td>
+                    <td class="number-col" style="color: var(--accent-yellow); font-weight:700;">${row.ratio.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render SPKLU Data Table based on current filters and page
+        function renderSPKLUTable() {
+            const tbody = document.getElementById('spklu-table-body');
+            tbody.innerHTML = '';
+
+            if (filteredList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">Tidak ada data SPKLU yang cocok dengan filter pencarian.</td></tr>';
+                document.getElementById('pagination-info').innerText = 'Menampilkan 0 dari 0 data SPKLU';
+                document.getElementById('pagination-buttons').innerHTML = '';
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredList.length);
+            const pageData = filteredList.slice(startIndex, endIndex);
+
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="number-col" style="color: var(--text-muted);">${row.gid}</td>
+                    <td><strong>${row.name}</strong></td>
+                    <td style="color: #d1d5db; font-size: 13px;">${row.address}</td>
+                    <td><span class="badge badge-cyan">${row.city || '-'}</span></td>
+                    <td><span class="badge badge-purple">${row.province}</span></td>
+                    <td class="number-col" style="font-size:12px; color:var(--text-muted);">
+                        <i class="fas fa-location-crosshairs" style="color: var(--accent-green); margin-right: 5px;"></i>
+                        ${row.lat.toFixed(5)}, ${row.lon.toFixed(5)}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update pagination text
+            document.getElementById('pagination-info').innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${filteredList.length} data SPKLU`;
+
+            // Draw pagination controls
+            renderPaginationControls();
+        }
+
+        // Pagination buttons rendering
+        function renderPaginationControls() {
+            const container = document.getElementById('pagination-buttons');
+            container.innerHTML = '';
+
+            const totalPages = Math.ceil(filteredList.length / rowsPerPage);
+            if (totalPages <= 1) return;
+
+            // Prev Button
+            const btnPrev = document.createElement('button');
+            btnPrev.className = 'btn-page';
+            btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            btnPrev.disabled = currentPage === 1;
+            btnPrev.onclick = () => {
+                currentPage--;
+                renderSPKLUTable();
+            };
+            container.appendChild(btnPrev);
+
+            // Logic to display page numbers (always current page, first, last, and window)
+            const range = 2; // how many pages before/after current
+            let pages = [];
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
+                    pages.push(i);
+                }
+            }
+
+            let prevPage = null;
+            pages.forEach(p => {
+                if (prevPage !== null && p - prevPage > 1) {
+                    const span = document.createElement('span');
+                    span.innerText = '...';
+                    span.style.padding = '0 5px';
+                    span.style.color = 'var(--text-muted)';
+                    container.appendChild(span);
+                }
+
+                const btn = document.createElement('button');
+                btn.className = `btn-page ${currentPage === p ? 'active' : ''}`;
+                btn.innerText = p;
+                btn.onclick = () => {
+                    currentPage = p;
+                    renderSPKLUTable();
+                };
+                container.appendChild(btn);
+                prevPage = p;
+            });
+
+            // Next Button
+            const btnNext = document.createElement('button');
+            btnNext.className = 'btn-page';
+            btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            btnNext.disabled = currentPage === totalPages;
+            btnNext.onclick = () => {
+                currentPage++;
+                renderSPKLUTable();
+            };
+            container.appendChild(btnNext);
+        }
+
+        // Populate dropdown filter options
+        function populateFilterDropdowns() {
+            const provSelect = document.getElementById('prov-filter');
+            const citySelect = document.getElementById('city-filter');
+
+            // Unique provinces
+            const provinces = [...new Set(spkluList.map(item => item.province).filter(Boolean))].sort();
+            provSelect.innerHTML = '<option value="">-- Semua Provinsi --</option>';
+            provinces.forEach(p => {
+                provSelect.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+
+            // Unique cities
+            const cities = [...new Set(spkluList.map(item => item.city).filter(Boolean))].sort();
+            citySelect.innerHTML = '<option value="">-- Semua Kota / Kabupaten --</option>';
+            cities.forEach(c => {
+                citySelect.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        // Bind filter event listeners (search, province dropdown, city dropdown)
+        function setupFilterListeners() {
+            const searchInput = document.getElementById('search-filter');
+            const provSelect = document.getElementById('prov-filter');
+            const citySelect = document.getElementById('city-filter');
+
+            const applyFilters = () => {
+                const searchVal = searchInput.value.toLowerCase().trim();
+                const provVal = provSelect.value;
+                const cityVal = citySelect.value;
+
+                filteredList = spkluList.filter(row => {
+                    const matchesSearch = !searchVal || 
+                                          row.name.toLowerCase().includes(searchVal) || 
+                                          row.address.toLowerCase().includes(searchVal);
+                    
+                    const matchesProv = !provVal || row.province === provVal;
+                    const matchesCity = !cityVal || row.city === cityVal;
+
+                    return matchesSearch && matchesProv && matchesCity;
+                });
+
+                currentPage = 1;
+                renderSPKLUTable();
+            };
+
+            searchInput.addEventListener('input', applyFilters);
+            provSelect.addEventListener('change', () => {
+                // When province changes, dynamically filter city dropdown options
+                const selectedProv = provSelect.value;
+                const citySelect = document.getElementById('city-filter');
+                
+                let filteredCities;
+                if (selectedProv) {
+                    filteredCities = [...new Set(spkluList.filter(item => item.province === selectedProv).map(item => item.city).filter(Boolean))].sort();
+                } else {
+                    filteredCities = [...new Set(spkluList.map(item => item.city).filter(Boolean))].sort();
+                }
+                
+                citySelect.innerHTML = '<option value="">-- Semua Kota / Kabupaten --</option>';
+                filteredCities.forEach(c => {
+                    citySelect.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+
+                applyFilters();
+            });
+            citySelect.addEventListener('change', applyFilters);
+        }
+
+        // CSV Export Function
+        function downloadCSV(type) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            let filename = "";
+
+            if (type === 'density') {
+                filename = "rasio_kepadatan_spklu.csv";
+                // Header
+                csvContent += "Kota/Kabupaten,Jumlah Penduduk,Jumlah SPKLU,Rasio Per 100K Penduduk\n";
+                // Rows
+                statsData.densities.forEach(row => {
+                    csvContent += `"${row.city}",${row.population},${row.count},${row.ratio.toFixed(4)}\n`;
+                });
+            } else if (type === 'spklu') {
+                filename = "sebaran_spklu_nasional.csv";
+                // Header
+                csvContent += "GID,Nama Stasiun,Alamat,Kota/Kabupaten,Provinsi,Latitude,Longitude\n";
+                // Rows (using filtered items, or full list? Let's use filtered list so they can download their filtered query!)
+                filteredList.forEach(row => {
+                    csvContent += `${row.gid},"${row.name.replace(/"/g, '""')}","${row.address.replace(/"/g, '""')}","${row.city || ''}","${row.province}",${row.lat},${row.lon}\n`;
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

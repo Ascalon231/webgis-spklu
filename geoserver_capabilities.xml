@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "/geoserver/schemas/wms/1.1.1/WMS_MS_Capabilities.dtd">
+<WMT_MS_Capabilities version="1.1.1" updateSequence="1569">
+  <Service>
+    <Name>OGC:WMS</Name>
+    <Title>GeoNode Local GeoServer</Title>
+    <Abstract>This is a description of your Web Map Server.</Abstract>
+    <KeywordList>
+      <Keyword>WFS</Keyword>
+      <Keyword>WMS</Keyword>
+      <Keyword>GEOSERVER</Keyword>
+    </KeywordList>
+    <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://geoserver.sourceforge.net/html/index.php"/>
+    <ContactInformation>
+      <ContactPersonPrimary>
+        <ContactPerson/>
+        <ContactOrganization/>
+      </ContactPersonPrimary>
+      <ContactPosition/>
+      <ContactAddress>
+        <AddressType/>
+        <Address/>
+        <City/>
+        <StateOrProvince/>
+        <PostCode/>
+        <Country/>
+      </ContactAddress>
+      <ContactVoiceTelephone/>
+      <ContactFacsimileTelephone/>
+      <ContactElectronicMailAddress/>
+    </ContactInformation>
+    <Fees>NONE</Fees>
+    <AccessConstraints>NONE</AccessConstraints>
+  </Service>
+  <Capability>
+    <Request>
+      <GetCapabilities>
+        <Format>application/vnd.ogc.wms_xml</Format>
+        <Format>text/xml</Format>
+        <DCPType>
+          <HTTP>
+            <Get>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Get>
+            <Post>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Post>
+          </HTTP>
+        </DCPType>
+      </GetCapabilities>
+      <GetMap>
+        <Format>image/png</Format>
+        <Format>application/atom xml</Format>
+        <Format>application/atom+xml</Format>
+        <Format>application/json;type=utfgrid</Format>
+        <Format>application/openlayers</Format>
+        <Format>application/openlayers2</Format>
+        <Format>application/openlayers3</Format>
+        <Format>application/pdf</Format>
+        <Format>application/rss xml</Format>
+        <Format>application/rss+xml</Format>
+        <Format>application/vnd.google-earth.kml</Format>
+        <Format>application/vnd.google-earth.kml xml</Format>
+        <Format>application/vnd.google-earth.kml+xml</Format>
+        <Format>application/vnd.google-earth.kml+xml;mode=networklink</Format>
+        <Format>application/vnd.google-earth.kmz</Format>
+        <Format>application/vnd.google-earth.kmz xml</Format>
+        <Format>application/vnd.google-earth.kmz+xml</Format>
+        <Format>application/vnd.google-earth.kmz;mode=networklink</Format>
+        <Format>atom</Format>
+        <Format>image/geotiff</Format>
+        <Format>image/geotiff8</Format>
+        <Format>image/gif</Format>
+        <Format>image/gif;subtype=animated</Format>
+        <Format>image/jpeg</Format>
+        <Format>image/png8</Format>
+        <Format>image/png; mode=8bit</Format>
+        <Format>image/svg</Format>
+        <Format>image/svg xml</Format>
+        <Format>image/svg+xml</Format>
+        <Format>image/tiff</Format>
+        <Format>image/tiff8</Format>
+        <Format>image/vnd.jpeg-png</Format>
+        <Format>image/vnd.jpeg-png8</Format>
+        <Format>kml</Format>
+        <Format>kmz</Format>
+        <Format>openlayers</Format>
+        <Format>rss</Format>
+        <Format>text/html; subtype=openlayers</Format>
+        <Format>text/html; subtype=openlayers2</Format>
+        <Format>text/html; subtype=openlayers3</Format>
+        <Format>utfgrid</Format>
+        <DCPType>
+          <HTTP>
+            <Get>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Get>
+          </HTTP>
+        </DCPType>
+      </GetMap>
+      <GetFeatureInfo>
+        <Format>text/plain</Format>
+        <Format>application/vnd.ogc.gml</Format>
+        <Format>text/xml</Format>
+        <Format>application/vnd.ogc.gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/html</Format>
+        <Format>text/javascript</Format>
+        <Format>application/json</Format>
+        <DCPType>
+          <HTTP>
+            <Get>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Get>
+            <Post>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Post>
+          </HTTP>
+        </DCPType>
+      </GetFeatureInfo>
+      <DescribeLayer>
+        <Format>application/vnd.ogc.wms_xml</Format>
+        <DCPType>
+          <HTTP>
+            <Get>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Get>
+          </HTTP>
+        </DCPType>
+      </DescribeLayer>
+      <GetLegendGraphic>
+        <Format>image/png</Format>
+        <Format>image/jpeg</Format>
+        <Format>application/json</Format>
+        <Format>image/gif</Format>
+        <DCPType>
+          <HTTP>
+            <Get>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Get>
+          </HTTP>
+        </DCPType>
+      </GetLegendGraphic>
+      <GetStyles>
+        <Format>application/vnd.ogc.sld+xml</Format>
+        <DCPType>
+          <HTTP>
+            <Get>
+              <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?SERVICE=WMS&amp;"/>
+            </Get>
+          </HTTP>
+        </DCPType>
+      </GetStyles>
+    </Request>
+    <Exception>
+      <Format>application/vnd.ogc.se_xml</Format>
+      <Format>application/vnd.ogc.se_inimage</Format>
+      <Format>application/vnd.ogc.se_blank</Format>
+      <Format>application/json</Format>
+      <Format>text/javascript</Format>
+    </Exception>
+    <UserDefinedSymbolization SupportSLD="1" UserLayer="1" UserStyle="1" RemoteWFS="1"/>
+    <Layer>
+      <Title>GeoNode Local GeoServer</Title>
+      <Abstract>This is a description of your Web Map Server.</Abstract>
+      <!--Limited list of EPSG projections:-->
+      <SRS>EPSG:4326</SRS>
+      <SRS>EPSG:3785</SRS>
+      <SRS>EPSG:3857</SRS>
+      <SRS>EPSG:900913</SRS>
+      <SRS>EPSG:32647</SRS>
+      <SRS>EPSG:32736</SRS>
+      <LatLonBoundingBox minx="94.97191104600006" miny="-11.208656117999851" maxx="141.02004178900006" maxy="6.076832204000027"/>
+      <BoundingBox SRS="EPSG:4326" minx="94.97191104600006" miny="-11.208656117999851" maxx="141.02004178900006" maxy="6.076832204000027"/>
+      <BoundingBox SRS="EPSG:3785" minx="1.05722247773048E7" miny="-1247476.737857444" maxx="1.5698279243597647E7" maxy="673221.4693210776"/>
+      <BoundingBox SRS="EPSG:3857" minx="1.05722247773048E7" miny="-1255777.4679370625" maxx="1.5698279243597647E7" maxy="677741.6994430094"/>
+      <BoundingBox SRS="EPSG:900913" minx="1.05722247773048E7" miny="-1255777.4679370625" maxx="1.5698279243597647E7" maxy="677741.6994430094"/>
+      <BoundingBox SRS="EPSG:32647" minx="51409.12265700899" miny="-1654330.6715505184" maxx="5663868.687103228" maxy="903207.9626063374"/>
+      <BoundingBox SRS="EPSG:32736" minx="8886440.322815603" miny="-6148716.077559355" maxx="3.2663680415795475E7" maxy="1.963742581385297E7"/>
+      <Layer queryable="1" opaque="0">
+        <Name>geonode:batas_desa_fixed</Name>
+        <Title>Peta Batas Adiministrasi Desa/Desa Adat</Title>
+        <Abstract>Peta Batas Adiministrasi Desa/Desa Adat Juli 2025</Abstract>
+        <KeywordList>
+          <Keyword>Kementerian Dalam Negeri</Keyword>
+          <Keyword>batas_desa_fixed</Keyword>
+          <Keyword>features</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <LatLonBoundingBox minx="99.16718317166612" miny="-8.917278898502332" maxx="139.23372145588053" maxy="3.255657396571621"/>
+        <BoundingBox SRS="EPSG:4326" minx="99.16718317166612" miny="-8.917278898502332" maxx="139.23372145588053" maxy="3.255657396571621"/>
+        <BoundingBox SRS="EPSG:3785" minx="1.103924033407316E7" miny="-990079.843890886" maxx="1.549942697372111E7" maxy="360188.42098421836"/>
+        <BoundingBox SRS="EPSG:3857" minx="1.103924033407316E7" miny="-996698.8696770848" maxx="1.549942697372111E7" maxy="362613.30637645005"/>
+        <BoundingBox SRS="EPSG:900913" minx="1.103924033407316E7" miny="-996698.8696770848" maxx="1.549942697372111E7" maxy="362613.30637645005"/>
+        <BoundingBox SRS="EPSG:32647" minx="518379.94945282815" miny="-1286281.2419987754" maxx="5400082.634084521" maxy="471908.60932585073"/>
+        <BoundingBox SRS="EPSG:32736" minx="9957419.716729471" miny="-2358754.252354644" maxx="3.088213843011935E7" maxy="1.4852968518868024E7"/>
+        <MetadataURL type="FGDC">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://map.kemendagri.go.id/catalogue/csw?request=GetRecordById&amp;service=CSW&amp;version=2.0.2&amp;id=f72ece71-94b8-42d5-ae17-c5e6ac946eb5&amp;outputschema=http%3A%2F%2Fwww.opengis.net%2Fcat%2Fcsw%2Fcsdgm&amp;elementsetname=full"/>
+        </MetadataURL>
+        <Style>
+          <Name>geonode:batas_desa_fixed</Name>
+          <Title>Default Polygon</Title>
+          <Abstract>A sample style that draws a polygon</Abstract>
+          <LegendURL width="20" height="20">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?request=GetLegendGraphic&amp;version=1.1.1&amp;format=image%2Fpng&amp;width=20&amp;height=20&amp;layer=geonode%3Abatas_desa_fixed"/>
+          </LegendURL>
+        </Style>
+      </Layer>
+      <Layer queryable="1" opaque="0">
+        <Name>geonode:igt_batasdesa_062024</Name>
+        <Title>Peta Batas Administrasi Desa/Desa Adat</Title>
+        <Abstract>Geodatabase data batas wilayah administrasi desa edisi Mei 2024 merupakan pemutakhiran dari Geodatabase data batas wilayah administrasi desa. Proses pemutakhiran yang dilakukan antara lain: (1) Pemuktahiran data batas administrasi desa hasil Verifikasi Teknis Batas Wilayah Administrasi Desa oleh BIG; (2) Penyelarasan batas desa pada batas kabupaten/kota mengikuti Permendagri Kabupaten/Kota terbaru; (3) Pemutakhiran data batas desa dengan garis pantai/pulau (4) Sinkronisasi data wilayah administrasi desa berdasarkan Kepmendagri 100.1.1-6117 Tahun 2022 tentang Pemberian dan Pemutakhiran KodeSumber data pada geodatabase ini adalah dari laporan Pemerintah Daerah sejak tahun 2020 s.d 2024 yang sudah tidak ada error topologi dan telah sesuai dengan batas daerah.Beberapa catatan tambahan dalam Geodatabase data batas wilayah administrasi desa ini adalah: masih terdapat desa yang belum sesuai dengan garis pantai terbaru</Abstract>
+        <KeywordList>
+          <Keyword>igt_batasdesa_062024</Keyword>
+          <Keyword>Downloadable Data</Keyword>
+          <Keyword>Kementerian Dalam Negeri</Keyword>
+          <Keyword>Batas Desa Edisi Mei 2024</Keyword>
+          <Keyword>features</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <LatLonBoundingBox minx="99.16718317166607" miny="-8.917278898265579" maxx="139.233721456" maxy="3.25565739700005"/>
+        <BoundingBox SRS="EPSG:4326" minx="99.16718317166607" miny="-8.917278898265579" maxx="139.233721456" maxy="3.25565739700005"/>
+        <BoundingBox SRS="EPSG:3785" minx="1.1039240334073154E7" miny="-990079.8438643824" maxx="1.549942697373441E7" maxy="360188.4210316698"/>
+        <BoundingBox SRS="EPSG:3857" minx="1.1039240334073154E7" miny="-996698.869650408" maxx="1.549942697373441E7" maxy="362613.3064242179"/>
+        <BoundingBox SRS="EPSG:900913" minx="1.1039240334073154E7" miny="-996698.869650408" maxx="1.549942697373441E7" maxy="362613.3064242179"/>
+        <BoundingBox SRS="EPSG:32647" minx="518379.94945283444" miny="-1286281.2419672224" maxx="5400082.634101767" maxy="471908.6093886902"/>
+        <BoundingBox SRS="EPSG:32736" minx="9957419.716746015" miny="-2358754.2521547" maxx="3.088213843022862E7" maxy="1.4852968519521667E7"/>
+        <MetadataURL type="FGDC">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://map.kemendagri.go.id/catalogue/csw?request=GetRecordById&amp;service=CSW&amp;version=2.0.2&amp;id=1f24e4f6-d035-4b2e-9966-2933dfb35bff&amp;outputschema=http%3A%2F%2Fwww.opengis.net%2Fcat%2Fcsw%2Fcsdgm&amp;elementsetname=full"/>
+        </MetadataURL>
+        <Style>
+          <Name>geonode:igt_batasdesa_062024</Name>
+          <Title>Default Polygon</Title>
+          <Abstract>A sample style that draws a polygon</Abstract>
+          <LegendURL width="20" height="20">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?request=GetLegendGraphic&amp;version=1.1.1&amp;format=image%2Fpng&amp;width=20&amp;height=20&amp;layer=geonode%3Aigt_batasdesa_062024"/>
+          </LegendURL>
+        </Style>
+      </Layer>
+      <Layer queryable="1" opaque="0">
+        <Name>geonode:jumlah_penduduk_kabkot_fixed</Name>
+        <Title>Jumlah Penduduk Berdasarkan Kabupaten/Kota</Title>
+        <Abstract/>
+        <KeywordList>
+          <Keyword>jumlah_penduduk_kabkot_fixed</Keyword>
+          <Keyword>Kementerian Dalam Negeri</Keyword>
+          <Keyword>features</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <LatLonBoundingBox minx="94.97191104600006" miny="-11.00761537699998" maxx="141.02004178900006" maxy="6.076832204000027"/>
+        <BoundingBox SRS="EPSG:4326" minx="94.97191104600006" miny="-11.00761537699998" maxx="141.02004178900006" maxy="6.076832204000027"/>
+        <BoundingBox SRS="EPSG:3785" minx="1.05722247773048E7" miny="-1224816.7561426489" maxx="1.5698279243597647E7" maxy="673221.4693210776"/>
+        <BoundingBox SRS="EPSG:3857" minx="1.05722247773048E7" miny="-1232970.4198342145" maxx="1.5698279243597647E7" maxy="677741.6994430094"/>
+        <BoundingBox SRS="EPSG:900913" minx="1.05722247773048E7" miny="-1232970.4198342145" maxx="1.5698279243597647E7" maxy="677741.6994430094"/>
+        <BoundingBox SRS="EPSG:32647" minx="51412.30334705312" miny="-1625224.0674032846" maxx="5663814.22983258" maxy="903207.9626063374"/>
+        <BoundingBox SRS="EPSG:32736" minx="8900072.505554182" miny="-5935780.178287464" maxx="3.2661724351924427E7" maxy="1.963742581385297E7"/>
+        <MetadataURL type="FGDC">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://map.kemendagri.go.id/catalogue/csw?request=GetRecordById&amp;service=CSW&amp;version=2.0.2&amp;id=69ff35de-38fa-4220-bc30-044245b1c369&amp;outputschema=http%3A%2F%2Fwww.opengis.net%2Fcat%2Fcsw%2Fcsdgm&amp;elementsetname=full"/>
+        </MetadataURL>
+        <Style>
+          <Name>geonode:jumlah_penduduk_kabkot_fixed</Name>
+          <Title>geonode:jumlah_penduduk_kabkot_fixed</Title>
+          <LegendURL width="149" height="100">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?request=GetLegendGraphic&amp;version=1.1.1&amp;format=image%2Fpng&amp;width=20&amp;height=20&amp;layer=geonode%3Ajumlah_penduduk_kabkot_fixed"/>
+          </LegendURL>
+        </Style>
+      </Layer>
+      <Layer queryable="1" opaque="0">
+        <Name>geonode:peta_batas_sda_laut_provinsi</Name>
+        <Title>Peta Batas Pengelolaan Kewenangan Sumber Daya Alam di Laut Provinsi</Title>
+        <Abstract>Peta Batas Pengelolaan Kewenangan Sumber Daya Alam di Laut Provinsi</Abstract>
+        <KeywordList>
+          <Keyword>peta_batas_sda_laut_provinsi</Keyword>
+          <Keyword>Kementerian Dalam Negeri</Keyword>
+          <Keyword>features</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <LatLonBoundingBox minx="98.39667995971257" miny="-11.208656117999851" maxx="141.01044248600022" maxy="5.767015952577992"/>
+        <BoundingBox SRS="EPSG:4326" minx="98.39667995971257" miny="-11.208656117999851" maxx="141.01044248600022" maxy="5.767015952577992"/>
+        <BoundingBox SRS="EPSG:3785" minx="1.095346830886391E7" miny="-1247476.737857444" maxx="1.5697210654075738E7" maxy="638777.4717488587"/>
+        <BoundingBox SRS="EPSG:3857" minx="1.095346830886391E7" miny="-1255777.4679370625" maxx="1.5697210654075734E7" maxy="643068.0300512732"/>
+        <BoundingBox SRS="EPSG:900913" minx="1.095346830886391E7" miny="-1255777.4679370625" maxx="1.5697210654075734E7" maxy="643068.0300512732"/>
+        <BoundingBox SRS="EPSG:32647" minx="432864.4552970893" miny="-1654091.331565038" maxx="5662533.740848486" maxy="857283.3267300682"/>
+        <BoundingBox SRS="EPSG:32736" minx="9608827.552798538" miny="-6141122.618443227" maxx="3.2657437968730435E7" maxy="1.9178101518322285E7"/>
+        <MetadataURL type="FGDC">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://map.kemendagri.go.id/catalogue/csw?request=GetRecordById&amp;service=CSW&amp;version=2.0.2&amp;id=5d5b978c-4fb4-4e24-a6de-55ef919e8aa1&amp;outputschema=http%3A%2F%2Fwww.opengis.net%2Fcat%2Fcsw%2Fcsdgm&amp;elementsetname=full"/>
+        </MetadataURL>
+        <Style>
+          <Name>geonode:peta_batas_sda_laut_provinsi</Name>
+          <Title>Blue Line</Title>
+          <Abstract>A sample style that draws a line</Abstract>
+          <LegendURL width="20" height="20">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?request=GetLegendGraphic&amp;version=1.1.1&amp;format=image%2Fpng&amp;width=20&amp;height=20&amp;layer=geonode%3Apeta_batas_sda_laut_provinsi"/>
+          </LegendURL>
+        </Style>
+      </Layer>
+      <Layer queryable="1" opaque="0">
+        <Name>geonode:seamless_bad123_rev130723_1</Name>
+        <Title>Peta Batas Administrasi Provinsi dan Kabupaten/Kota</Title>
+        <Abstract>Peta Batas Administrasi Provinsi dan Kabupaten/Kota</Abstract>
+        <KeywordList>
+          <Keyword>seamless_bad123_rev130723_1</Keyword>
+          <Keyword>Kementerian Dalam Negeri</Keyword>
+          <Keyword>features</Keyword>
+        </KeywordList>
+        <SRS>EPSG:4326</SRS>
+        <LatLonBoundingBox minx="95.27240527800006" miny="-10.29285000699997" maxx="141.00273535700012" maxy="5.611964615000034"/>
+        <BoundingBox SRS="EPSG:4326" minx="95.27240527800006" miny="-10.29285000699997" maxx="141.00273535700012" maxy="5.611964615000034"/>
+        <BoundingBox SRS="EPSG:3785" minx="1.0605675642197357E7" miny="-1144377.8551981666" maxx="1.5696352700399965E7" maxy="621546.7702538945"/>
+        <BoundingBox SRS="EPSG:3857" minx="1.0605675642197357E7" miny="-1152007.8648192552" maxx="1.5696352700399965E7" maxy="625722.3398983543"/>
+        <BoundingBox SRS="EPSG:900913" minx="1.0605675642197357E7" miny="-1152007.8648192552" maxx="1.5696352700399965E7" maxy="625722.3398983543"/>
+        <BoundingBox SRS="EPSG:32647" minx="84923.20498980099" miny="-1521102.9346737242" maxx="5661281.711246506" maxy="834252.2789844467"/>
+        <BoundingBox SRS="EPSG:32736" minx="9008962.79799" miny="-5135336.438348605" maxx="3.26459493761616E7" maxy="1.894496514611515E7"/>
+        <MetadataURL type="FGDC">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://map.kemendagri.go.id/catalogue/csw?request=GetRecordById&amp;service=CSW&amp;version=2.0.2&amp;id=15980d64-d37f-405d-bdd4-3c44f0dd7543&amp;outputschema=http%3A%2F%2Fwww.opengis.net%2Fcat%2Fcsw%2Fcsdgm&amp;elementsetname=full"/>
+        </MetadataURL>
+        <Style>
+          <Name>geonode:seamless_bad123_rev130723_1</Name>
+          <Title>Blue Line</Title>
+          <Abstract>A sample style that draws a line</Abstract>
+          <LegendURL width="20" height="20">
+            <Format>image/png</Format>
+            <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="/geoserver/wms?request=GetLegendGraphic&amp;version=1.1.1&amp;format=image%2Fpng&amp;width=20&amp;height=20&amp;layer=geonode%3Aseamless_bad123_rev130723_1"/>
+          </LegendURL>
+        </Style>
+      </Layer>
+    </Layer>
+  </Capability>
+</WMT_MS_Capabilities>

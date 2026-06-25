@@ -1,0 +1,3809 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cas.in – Peta Sebaran SPKLU Teraktif Indonesia | Charging Indonesia</title>
+    
+    <!-- SEO Optimization Meta Tags -->
+    <meta name="description" content="Cas.in (Charging Indonesia) adalah platform WebGIS interaktif yang menyajikan peta sebaran Stasiun Pengisian Kendaraan Listrik Umum (SPKLU) di seluruh Indonesia beserta analisis jaringan jalan nasional dan kepadatan penduduk.">
+    <meta name="keywords" content="SPKLU Indonesia, Peta SPKLU, WebGIS SPKLU, Stasiun Pengisian Kendaraan Listrik, Kendaraan Listrik Indonesia, EV Charger Map Indonesia, Ripan Nursalam, GIS Portfolio">
+    <meta name="author" content="Ripan Nursalam">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph (Facebook / LinkedIn) Meta Tags -->
+    <meta property="og:title" content="Cas.in – Peta Sebaran SPKLU Teraktif Indonesia | Charging Indonesia">
+    <meta property="og:description" content="Platform WebGIS interaktif pemetaan SPKLU nasional, integrasi PostGIS, analisis rute jalan, dan kepadatan penduduk.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:8500/">
+    <meta property="og:image" content="/static/logo/LogoCasin.png">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cas.in – Peta Sebaran SPKLU Teraktif Indonesia">
+    <meta name="twitter:description" content="Platform WebGIS interaktif pemetaan SPKLU nasional, integrasi PostGIS, analisis rute jalan, dan kepadatan penduduk.">
+    
+    <!-- Structured Data (JSON-LD) for SEO Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Cas.in - Charging Indonesia",
+      "operatingSystem": "All",
+      "applicationCategory": "GISApplication",
+      "description": "Platform WebGIS interaktif pemetaan SPKLU nasional di Indonesia berbasis PostGIS dan Leaflet.js.",
+      "author": {
+        "@type": "Person",
+        "name": "Ripan Nursalam"
+      },
+      "license": "https://opensource.org/licenses/MIT",
+      "features": [
+        "Interactive SPKLU Mapping",
+        "PostGIS Spatial Density Analysis",
+        "Coordinate Jittering",
+        "National Road Routing with OSM fallback",
+        "Real-time analytics dashboard"
+      ]
+    }
+    </script>
+    
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet Map library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Leaflet MarkerCluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Chart.js for Advanced Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet Routing Machine for Routing -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(18, 25, 41, 0.7);
+            --accent-green: #00ff87;
+            --accent-cyan: #60efff;
+            --text-light: #f3f4f6;
+            --text-gray: #9ca3af;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --shadow-glow: rgba(0, 255, 135, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Layout Container */
+        #container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar Design (Glassmorphism) */
+        #sidebar {
+            width: 420px;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.85) 0%, rgba(5, 8, 16, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            /* Reduce shadow for lighter feel */
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        #sidebar.collapsed .sidebar-header {
+            display: none;
+        }
+
+        /* Logo image size */
+        .logo-image {
+            max-height: 80px;
+            max-width: 100%;
+            width: auto;
+            filter: drop-shadow(0 0 2px #000);
+        }
+
+        #sidebar.collapsed {
+            width: 0;
+            transform: none;
+            box-shadow: none;
+            overflow: visible;
+        }
+        /* Hide inner content when sidebar collapsed */
+        #sidebar.collapsed .logo-container,
+        #sidebar.collapsed .logo-subtitle,
+        #sidebar.collapsed .search-section,
+        #sidebar.collapsed .nav-links,
+        #sidebar.collapsed .layer-control-panel,
+        #sidebar.collapsed .sidebar-tabs,
+        #sidebar.collapsed .layer-toggle-item,
+        #sidebar.collapsed .sidebar-content {
+            display: none;
+        }
+
+        .sidebar-toggle-btn {
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 48px;
+            background: #0a0f1e;
+            border: 1px solid var(--border-glass);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            color: var(--text-gray);
+            cursor: pointer;
+            /* Make button lighter */
+            opacity: 0.85;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .sidebar-toggle-btn:hover {
+            color: var(--accent-cyan);
+            background: #0f1528;
+            opacity: 1;
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(0, 255, 135, 0.5));
+        }
+
+        .logo-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+        }
+
+        /* Search & Filter Section */
+        .search-section {
+            padding: 20px 24px 10px 24px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 12px rgba(0, 255, 135, 0.25);
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-family: inherit;
+            font-size: 14px;
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(96, 239, 255, 0.25);
+        }
+
+        .filter-select option {
+            background-color: #0b0f19;
+            color: var(--text-light);
+        }
+
+        /* Layer Control Panel */
+        .layer-control-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin: 10px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .layer-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .layer-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .layer-label i {
+            font-size: 14px;
+        }
+
+        .layer-icon-spklu {
+            color: var(--accent-green);
+        }
+
+        .layer-icon-road {
+            color: var(--accent-cyan);
+        }
+
+        /* Switch toggle styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 20px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-green);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--accent-green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        input:checked + .slider-road + .slider {
+            background-color: var(--accent-cyan);
+        }
+
+        /* Scrollable Stats & List */
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 24px 24px 24px;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        /* Stats Card */
+        .stats-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent-green), var(--accent-cyan));
+        }
+
+        .stats-label {
+            font-size: 12px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .stats-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 38px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .stats-unit {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--accent-green);
+            text-transform: none;
+            letter-spacing: 0;
+            -webkit-text-fill-color: initial;
+        }
+
+        /* List Items */
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+        }
+
+        .spklu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #route-spklu-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #route-spklu-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #route-spklu-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+
+        #route-spklu-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .spklu-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .spklu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(0, 255, 135, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .spklu-item.active {
+            background: rgba(0, 255, 135, 0.05);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.15);
+        }
+
+        .spklu-item-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        .spklu-item-info {
+            font-size: 12px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .spklu-item-info i {
+            color: var(--accent-cyan);
+            font-size: 10px;
+        }
+
+        /* Map styling */
+        #map {
+            flex: 1;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            position: relative;
+        }
+
+        /* Map watermark */
+        .map-watermark {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            max-height: 150px;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        /* Custom Markers */
+        .custom-spklu-marker {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .marker-pin {
+            width: 32px;
+            height: 32px;
+            border-radius: 50% 50% 50% 0;
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-cyan) 100%);
+            position: absolute;
+            transform: rotate(-45deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.6);
+            border: 2px solid #0d1117;
+            transition: all 0.25s ease;
+        }
+
+        .marker-pin i {
+            transform: rotate(45deg);
+            color: #050810;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .marker-pulse {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 255, 135, 0.4);
+            position: absolute;
+            animation: pulsate 2s infinite ease-out;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Access-based custom colors for SPKLU markers along the route */
+        .marker-pin.pin-green {
+            background: linear-gradient(135deg, #00ff87 0%, #00d2ff 100%) !important;
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.8) !important;
+        }
+        .marker-pulse.pulse-green {
+            background: rgba(0, 255, 135, 0.5) !important;
+        }
+
+        .marker-pin.pin-orange {
+            background: linear-gradient(135deg, #ff9f00 0%, #ffea00 100%) !important;
+            box-shadow: 0 0 15px rgba(255, 159, 0, 0.8) !important;
+        }
+        .marker-pulse.pulse-orange {
+            background: rgba(255, 159, 0, 0.5) !important;
+        }
+
+        /* Charger Dot style (titik charger) */
+        .charger-dot {
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-cyan) 100%);
+            border: 2px solid #0c0f1d;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(96, 239, 255, 0.8);
+            display: inline-block;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .charger-dot.dot-green {
+            background: linear-gradient(135deg, #00ff87 0%, #00d2ff 100%) !important;
+            box-shadow: 0 0 10px rgba(0, 255, 135, 0.8) !important;
+        }
+        .charger-dot.dot-orange {
+            background: linear-gradient(135deg, #ff9f00 0%, #ffea00 100%) !important;
+            box-shadow: 0 0 10px rgba(255, 159, 0, 0.8) !important;
+        }
+        .charger-dot:hover {
+            transform: scale(1.4);
+            background: #ffffff !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 1) !important;
+            border-color: #ffffff !important;
+            z-index: 1000 !important;
+        }
+
+        /* GPS User Location Marker Styles */
+        .user-gps-marker {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .gps-dot {
+            width: 14px;
+            height: 14px;
+            background: #007bff;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.9);
+            z-index: 2;
+        }
+        .gps-pulse-ring {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border: 3px solid rgba(0, 123, 255, 0.6);
+            border-radius: 50%;
+            animation: gps-pulsate 1.8s infinite ease-out;
+            z-index: 1;
+            opacity: 0;
+        }
+        @keyframes gps-pulsate {
+            0% {
+                transform: scale(0.4);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.85;
+            }
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        /* Floating Bottom Sheet for Route Timeline */
+        .route-bottom-sheet {
+            position: absolute;
+            bottom: 24px;
+            left: 430px;
+            right: 20px;
+            height: 140px;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            z-index: 950;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 16px;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #sidebar.collapsed ~ #map .route-bottom-sheet {
+            left: 20px;
+        }
+
+        .route-bottom-sheet.collapsed-sheet {
+            transform: translateY(220px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Timeline Connector Badge Style */
+        .timeline-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 65px;
+            text-align: center;
+            border: 1px solid var(--border-glass);
+            position: relative;
+            background: rgba(10, 15, 30, 0.9);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+        }
+        .timeline-connector::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -15px;
+            right: -15px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            z-index: -1;
+        }
+        .timeline-connector.connector-red {
+            background: rgba(255, 74, 74, 0.2);
+            border-color: rgba(255, 74, 74, 0.5);
+            color: #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 74, 74, 0.25);
+        }
+        .timeline-connector.connector-yellow {
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.4);
+            color: #ffd700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.1);
+        }
+        .timeline-connector.connector-gray {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--text-gray);
+        }
+
+        /* Floating Button to Show Timeline */
+        .floating-show-timeline-btn {
+            position: absolute;
+            bottom: 24px;
+            left: 430px;
+            z-index: 940;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease, background 0.2s ease;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .floating-show-timeline-btn:hover {
+            background: rgba(0, 255, 135, 0.15);
+            border-color: var(--accent-green);
+            transform: scale(1.02);
+        }
+        #sidebar.collapsed ~ #map .floating-show-timeline-btn {
+            left: 20px;
+        }
+
+        .map-legend-card.shifted-legend {
+            bottom: 180px;
+        }
+
+        .sheet-summary-block {
+            width: 140px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-glass);
+            padding-right: 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sheet-timeline-block {
+            flex: 1;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 4px;
+            transition: opacity 0.3s ease;
+        }
+
+        .sheet-timeline-block::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .sheet-timeline-block::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sheet-timeline-block::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .sheet-timeline-block::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Floating Map Legend Card */
+        .map-legend-card {
+            position: absolute;
+            bottom: 24px;
+            right: 20px;
+            background: rgba(10, 15, 30, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--text-light);
+            font-size: 11px;
+            z-index: 900;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-marker {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1.5px solid #0d1117;
+        }
+        .legend-marker.marker-cyan {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-cyan) 100%);
+            box-shadow: 0 0 6px var(--accent-cyan);
+        }
+        .legend-marker.marker-green {
+            background: linear-gradient(135deg, #00ff87 0%, #00d2ff 100%);
+            box-shadow: 0 0 6px #00ff87;
+        }
+        .legend-marker.marker-orange {
+            background: linear-gradient(135deg, #ff9f00 0%, #ffea00 100%);
+            box-shadow: 0 0 6px #ff9f00;
+        }
+        .legend-marker.marker-user {
+            background: #007bff;
+            border-color: #ffffff;
+            box-shadow: 0 0 6px #007bff;
+        }
+
+        @keyframes pulsate {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        .custom-spklu-marker:hover .marker-pin {
+            transform: rotate(-45deg) scale(1.15);
+            box-shadow: 0 0 20px rgba(0, 255, 135, 0.9);
+        }
+
+        /* Marker Clusters Design */
+        .marker-cluster-small {
+            background-color: rgba(0, 255, 135, 0.2) !important;
+        }
+        .marker-cluster-small div {
+            background-color: rgba(0, 255, 135, 0.65) !important;
+            color: #050810 !important;
+            font-weight: 700;
+        }
+
+        .marker-cluster-medium {
+            background-color: rgba(96, 239, 255, 0.2) !important;
+        }
+        .marker-cluster-medium div {
+            background-color: rgba(96, 239, 255, 0.65) !important;
+            color: #050810 !important;
+            font-weight: 700;
+        }
+
+        .marker-cluster-large {
+            background-color: rgba(0, 255, 135, 0.3) !important;
+        }
+        .marker-cluster-large div {
+            background-color: var(--accent-green) !important;
+            color: #050810 !important;
+            font-weight: 800;
+            box-shadow: 0 0 12px var(--accent-green);
+        }
+
+        /* Popups Design */
+        .leaflet-popup-content-wrapper {
+            background: rgba(10, 15, 30, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            color: var(--text-light);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 4px;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(10, 15, 30, 0.9);
+            border: 1px solid var(--border-glass);
+        }
+
+        .popup-card {
+            padding: 8px 4px;
+        }
+
+        .popup-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(0, 255, 135, 0.15);
+            border: 1px solid rgba(0, 255, 135, 0.3);
+            color: var(--accent-green);
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .popup-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .popup-address {
+            font-size: 12px;
+            color: var(--text-gray);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .popup-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-top: 1px solid var(--border-glass);
+            padding-top: 10px;
+        }
+
+        .popup-detail-item {
+            font-size: 11px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .popup-detail-item i {
+            color: var(--accent-cyan);
+            width: 14px;
+            text-align: center;
+        }
+
+        .empty-list {
+            color: var(--text-gray);
+            font-size: 13px;
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        /* Sidebar Tab Buttons styling */
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-glass);
+            margin: 5px 24px 15px 24px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            padding: 10px 5px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-light);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+            text-shadow: 0 0 10px rgba(0, 255, 135, 0.3);
+        }
+
+        /* Tab panels visibility */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Advanced Analytics dashboard styling */
+        .chart-container-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .chart-box {
+            position: relative;
+            height: 220px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Route Search panel styling */
+        .route-setup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .route-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .route-input-group label {
+            font-size: 11px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .route-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .route-input-wrapper input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-light);
+            font-size: 13px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .route-input-wrapper input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .route-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-light);
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .route-action-btn:hover, .route-action-btn.active {
+            background: rgba(0, 255, 135, 0.1);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(0, 255, 135, 0.2);
+        }
+
+        .route-action-btn.gps-tracking-active {
+            background: rgba(0, 255, 135, 0.15) !important;
+            border-color: var(--accent-green) !important;
+            color: var(--accent-green) !important;
+            box-shadow: 0 0 10px rgba(0, 255, 135, 0.3) !important;
+            animation: gps-btn-pulse 2s infinite;
+        }
+
+        @keyframes gps-btn-pulse {
+            0% { box-shadow: 0 0 5px rgba(0, 255, 135, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(0, 255, 135, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(0, 255, 135, 0.3); }
+        }
+
+        .primary-btn {
+            flex: 1;
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-cyan) 100%);
+            border: none;
+            color: #050810;
+            padding: 10px 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .primary-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 255, 135, 0.4);
+        }
+
+        .primary-btn:disabled {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-gray);
+            cursor: not-allowed;
+            border: 1px solid var(--border-glass);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-light);
+            padding: 10px 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .route-stats-summary {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .route-stat-item {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .route-stat-label {
+            font-size: 10px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .route-stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Checkbox filter for routing */
+        .route-filter-wrapper {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding-left: 28px;
+            cursor: pointer;
+            font-size: 12.5px;
+            color: var(--text-light);
+            user-select: none;
+        }
+
+        .checkbox-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            height: 18px;
+            width: 18px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-container:hover input ~ .checkmark {
+            border-color: var(--accent-green);
+        }
+
+        .checkbox-container input:checked ~ .checkmark {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkbox-container input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkbox-container .checkmark:after {
+            left: 6px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid #050810;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Route popup buttons styling */
+        .popup-card .route-buttons-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            border-top: 1px solid var(--border-glass);
+            padding-top: 10px;
+        }
+
+        .route-popup-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-light);
+            padding: 6px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+
+        .route-popup-btn:hover {
+            background: rgba(0, 255, 135, 0.1);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .route-popup-btn.btn-end:hover {
+            background: rgba(255, 74, 74, 0.1);
+            border-color: #ff4a4a;
+            color: #ff4a4a;
+        }
+
+        .route-spklu-distance {
+            font-size: 11px;
+            color: var(--accent-green);
+            font-weight: 600;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .custom-route-marker .marker-pin {
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #0d1117;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .custom-route-marker .marker-pin i {
+            transform: rotate(45deg);
+            color: #050810;
+            font-size: 11px;
+        }
+
+        /* LRM routing line style customization to prevent thick white default boxes */
+        .leaflet-routing-container {
+            display: none !important; /* Hide default white LRM box completely */
+        }
+        
+        /* About Project Button Style & Modal Animation */
+        .about-btn:hover {
+            background: rgba(96, 239, 255, 0.15) !important;
+            border-color: var(--accent-cyan) !important;
+            box-shadow: 0 0 10px rgba(96, 239, 255, 0.25);
+            transform: translateY(-1px);
+        }
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+
+        <!-- Sidebar Panel -->
+        <div id="sidebar">
+            <!-- Sidebar toggle button -->
+            <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Sembunyikan/Tampilkan Menu">
+                <i class="fas fa-chevron-left" id="toggle-icon"></i>
+            </button>
+            <!-- Header -->
+            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px 10px 20px;">
+                <div class="logo-container">
+                     <h1 style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">Cas.in – WebGIS Sebaran SPKLU Teraktif Indonesia</h1>
+                     <img src="/static/logo/LogoCasin.png" alt="Cas.in - Charging Indonesia" class="logo-image" />
+                </div>
+                <button id="about-project-btn" class="about-btn" title="Informasi & Fitur Proyek" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); color: var(--text-light); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; font-size: 14px; outline: none;">
+                    <i class="fas fa-info-circle" style="color: var(--accent-cyan);"></i>
+                </button>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="search-section">
+                <div style="margin-bottom: 4px; font-size: 11px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Cari Lokasi</div>
+                <div class="search-box" style="margin-bottom: 12px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Cari stasiun atau kota...">
+                </div>
+                <div style="margin-bottom: 4px; font-size: 11px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Filter Wilayah</div>
+                <select id="province-filter" class="filter-select" style="margin-bottom: 12px;">
+                    <option value="">Semua Provinsi</option>
+                </select>
+                <div style="margin-bottom: 4px; font-size: 11px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Operator SPKLU</div>
+                <select id="provider-filter" class="filter-select" style="background-position: right 14px center;">
+                    <option value="">Semua Operator</option>
+                    <option value="pln">PLN Only</option>
+                    <option value="voltron">Voltron Only</option>
+                    <option value="terra">Terra Charge Only</option>
+                    <option value="hyundai">Hyundai Only</option>
+                    <option value="starvo">Starvo Only</option>
+                    <option value="wuling">Wuling Only</option>
+                    <option value="toyota_lexus">Toyota & Lexus Only</option>
+                    <option value="charge_plus">Utomo Charge+ Only</option>
+                    <option value="dayagreen">DayaGreen Only</option>
+                    <option value="bluecharge">BlueCharge Only</option>
+                    <option value="stroom">Stroom Only</option>
+                    <option value="other">Operator Lainnya</option>
+                </select>
+            </div>
+
+            <!-- Layer Toggle Switch Panel -->
+            <div class="layer-control-panel">
+                <div class="layer-toggle-item">
+                    <div class="layer-label">
+                        <i class="fas fa-charging-station layer-icon-spklu"></i>
+                        <span>Titik SPKLU</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-spklu-layer" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="layer-toggle-item">
+                    <div class="layer-label">
+                        <i class="fas fa-road layer-icon-road"></i>
+                        <span>Jaringan Jalan Nasional</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-road-layer" checked>
+                        <span class="slider slider-road"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-target="tab-lokasi"><i class="fas fa-map-marked-alt"></i> Lokasi</button>
+                <button class="tab-btn" data-target="tab-analitik"><i class="fas fa-chart-bar"></i> Analitik</button>
+                <button class="tab-btn" data-target="tab-rute"><i class="fas fa-route"></i> Rute</button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="sidebar-content">
+                
+                <!-- TAB 1: LOKASI -->
+                <div id="tab-lokasi" class="tab-panel active">
+                    <!-- Total Stats Card -->
+                    <div class="stats-card">
+                        <div class="stats-label">Total Stasiun Pengisian Baterai</div>
+                        <div class="stats-value" id="stats-total">0 <span class="stats-unit">Stasiun</span></div>
+                    </div>
+
+                    <!-- List section -->
+                    <h2 class="section-title">
+                        <i class="fas fa-list-ul"></i>
+                        Daftar Lokasi
+                    </h2>
+                    <div class="spklu-list" id="spklu-list">
+                        <div class="empty-list">Memuat data lokasi...</div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: ANALITIK -->
+                <div id="tab-analitik" class="tab-panel">
+                    <!-- Total Stats Card (Analitik) -->
+                    <div class="stats-card">
+                        <div class="stats-label">Total SPKLU Nasional</div>
+                        <div class="stats-value" id="stats-total-analitik">0 <span class="stats-unit">Stasiun</span></div>
+                    </div>
+
+                    <!-- Open Full Dashboard Button -->
+                    <div style="margin-top: 15px; margin-bottom: 20px;">
+                        <a href="/analytics" target="_blank" style="display: flex; justify-content: center; align-items: center; padding: 12px; font-weight: 600; font-size: 13px; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan)); color: #0c0f1d; border: none; box-shadow: 0 4px 15px rgba(96, 239, 255, 0.2); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-chart-line" style="margin-right: 8px;"></i><span style="font-weight: 700;">Visualisasi Data & Analitik SPKLU</span>
+                        </a>
+                    </div>
+
+                    <!-- Chart 1: Provinces -->
+                    <div class="chart-container-wrapper">
+                        <h3 class="section-title"><i class="fas fa-chart-simple" style="color: var(--accent-green);"></i> Sebaran per Provinsi (Top 5)</h3>
+                        <div class="chart-box">
+                            <canvas id="provChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Cities -->
+                    <div class="chart-container-wrapper">
+                        <h3 class="section-title"><i class="fas fa-chart-pie" style="color: var(--accent-cyan);"></i> Sebaran per Kota (Top 5)</h3>
+                        <div class="chart-box">
+                            <canvas id="cityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Density -->
+                    <div class="chart-container-wrapper">
+                        <h3 class="section-title"><i class="fas fa-users" style="color: #ffd700;"></i> Rasio SPKLU per 100K Penduduk (Top 5)</h3>
+                        <div class="chart-box">
+                            <canvas id="densityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: RUTE -->
+                <div id="tab-rute" class="tab-panel">
+                    <!-- Routing Setup -->
+                    <div class="route-setup-card">
+                        <div class="route-input-group">
+                            <label><i class="fas fa-circle-dot" style="color: var(--accent-green);"></i> Titik Mulai</label>
+                            <div class="route-input-wrapper">
+                                <input type="text" id="route-start-input" readonly placeholder="Klik SPKLU / klik kanan di peta...">
+                                <button class="route-action-btn" id="btn-pick-start" title="Pilih Titik Mulai di peta"><i class="fas fa-map-marker-alt"></i></button>
+                                <button class="route-action-btn" id="btn-gps-start" title="Gunakan Lokasi GPS Saya"><i class="fas fa-crosshairs"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="route-input-group" style="margin-top: 12px;">
+                            <label><i class="fas fa-location-dot" style="color: #ff4a4a;"></i> Titik Selesai</label>
+                            <div class="route-input-wrapper">
+                                <input type="text" id="route-end-input" readonly placeholder="Klik SPKLU / klik kanan di peta...">
+                                <button class="route-action-btn" id="btn-pick-end" title="Pilih Titik Selesai di peta"><i class="fas fa-map-marker-alt"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="route-input-group" style="margin-top: 12px;">
+                            <label>Prioritas Rute & Tipe Kendaraan</label>
+                            <select id="route-profile-select" class="filter-select" style="padding: 8px 12px; margin-top: 4px; background-position: right 14px center;">
+                                <option value="car-toll">Mobil (Lewat Jalan Tol)</option>
+                                <option value="car-avoid-toll">Mobil (Hindari Jalan Tol)</option>
+                                <option value="motorcycle">Sepeda Motor (Tanpa Jalan Tol)</option>
+                            </select>
+                        </div>
+
+                        <div class="route-buttons-row" style="margin-top: 15px; display: flex; gap: 8px;">
+                            <button id="btn-calculate-route" class="primary-btn" disabled><i class="fas fa-directions"></i> Hitung Rute</button>
+                            <button id="btn-clear-route" class="secondary-btn" style="display: none;"><i class="fas fa-undo"></i> Reset</button>
+                        </div>
+                    </div>
+
+                    <!-- Route Results -->
+                    <div id="route-results-panel" style="display: none;">
+                        <div class="route-stats-summary">
+                            <div class="route-stat-item">
+                                <div class="route-stat-label">Jarak Tempuh</div>
+                                <div class="route-stat-value" id="route-dist-val">-</div>
+                            </div>
+                            <div class="route-stat-item">
+                                <div class="route-stat-label">Waktu Tempuh</div>
+                                <div class="route-stat-value" id="route-time-val">-</div>
+                            </div>
+                        </div>
+
+                        <div class="route-filter-wrapper" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="chk-only-route-spklu" checked>
+                                <span class="checkmark"></span>
+                                Hanya tampilkan SPKLU sepanjang rute (5 km)
+                            </label>
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="chk-enable-battery-sim">
+                                <span class="checkmark"></span>
+                                Aktifkan Simulasi Kondisi Baterai
+                            </label>
+                        </div>
+
+                        <!-- Simulasi Kondisi Baterai (Advanced Planner) -->
+                        <div class="battery-simulator-panel" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass); border-radius: 14px; padding: 16px; margin-top: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.2);">
+                            <h3 class="section-title" style="margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px; color: #ffd700;">
+                                <i class="fas fa-battery-three-quarters"></i>
+                                <span>Simulasi Kondisi Baterai</span>
+                            </h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-gray); margin-bottom: 4px;">
+                                        <span>Kapasitas Baterai Maksimal</span>
+                                        <span id="lbl-max-range" style="color: #fff; font-weight: 600;">150 km</span>
+                                    </div>
+                                    <input type="range" id="range-max-battery" min="50" max="400" value="150" step="10" style="width: 100%; accent-color: #ffd700; background: rgba(255,255,255,0.05); border-radius: 4px; height: 6px;">
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-gray); margin-bottom: 4px;">
+                                        <span>Baterai Awal Perjalanan</span>
+                                        <span id="lbl-start-battery" style="color: #fff; font-weight: 600;">80%</span>
+                                    </div>
+                                    <input type="range" id="range-start-battery" min="10" max="100" value="80" step="5" style="width: 100%; accent-color: #ffd700; background: rgba(255,255,255,0.05); border-radius: 4px; height: 6px;">
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-gray); margin-bottom: 4px;">
+                                        <span>Batas Aman Baterai (Buffer)</span>
+                                        <span id="lbl-buffer-battery" style="color: #fff; font-weight: 600;">20 km</span>
+                                    </div>
+                                    <input type="range" id="range-buffer-battery" min="5" max="50" value="20" step="5" style="width: 100%; accent-color: #ffd700; background: rgba(255,255,255,0.05); border-radius: 4px; height: 6px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="route-spklu-container" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass); border-radius: 14px; padding: 16px; margin-top: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.2);">
+                            <h3 class="section-title" style="margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-exclamation-triangle" id="route-warning-icon" style="color: var(--accent-green);"></i>
+                                <span id="route-warning-title">Analisis Celah Baterai</span>
+                            </h3>
+                            <div id="route-spklu-list" style="padding-right: 4px;">
+                                <div class="empty-list">Silakan hitung rute terlebih dahulu.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Map Workspace -->
+        <div id="map">
+            <img src="/static/logo/LogoCasin.png" class="map-watermark" alt="logo watermark">
+            <!-- Floating Map Legend Card -->
+            <div id="map-legend" class="map-legend-card">
+                <h4 style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                    Legenda Peta
+                </h4>
+                <div class="legend-item">
+                    <span class="legend-marker marker-cyan"></span>
+                    <span>SPKLU Umum</span>
+                </div>
+                <div class="legend-item" id="legend-green-item" style="display: none;">
+                    <span class="legend-marker marker-green"></span>
+                    <span>Akses Cepat (&le; 1.5 km dari rute)</span>
+                </div>
+                <div class="legend-item" id="legend-orange-item" style="display: none;">
+                    <span class="legend-marker marker-orange"></span>
+                    <span>Perlu Memutar (&gt; 1.5 km dari rute)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker marker-user"></span>
+                    <span>Lokasi Anda (GPS)</span>
+                </div>
+                
+                <!-- Battery Gap Legend Items (visible only when routing) -->
+                <div id="legend-battery-gaps" style="display: none; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 8px; padding-top: 8px; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 2px;">Jarak Antara SPKLU Terdekat:</div>
+                    <div class="legend-item">
+                        <span class="legend-marker" style="background: #ff4a4a; box-shadow: 0 0 6px #ff4a4a; border-radius: 50%; width: 12px; height: 12px; border: 1.5px solid #0d1117;"></span>
+                        <span>Kritis (&gt; 50 km)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker" style="background: #ffd700; box-shadow: 0 0 6px #ffd700; border-radius: 50%; width: 12px; height: 12px; border: 1.5px solid #0d1117;"></span>
+                        <span>Sedang (30 - 50 km)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker" style="background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 50%; width: 12px; height: 12px;"></span>
+                        <span>Aman (&lt; 30 km)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Button to Show Bottom Sheet Timeline -->
+            <button id="btn-show-timeline" class="floating-show-timeline-btn">
+                <i class="fas fa-route" style="color: var(--accent-green);"></i>
+                Tampilkan Rencana Rute
+            </button>
+
+            <!-- Route Timeline Bottom Sheet -->
+            <div id="route-bottom-sheet" class="route-bottom-sheet" style="display: none;">
+                <!-- Summary Card -->
+                <div class="sheet-summary-block">
+                    <div style="font-size: 9px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Rencana Rute</div>
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent-green); line-height: 1.2; margin-bottom: 2px;" id="sheet-dist-val">-</div>
+                    <div style="font-size: 11px; color: var(--text-light); margin-bottom: 10px; font-weight: 500;" id="sheet-time-val">-</div>
+                    <button id="btn-toggle-sheet" class="route-popup-btn" style="width: 100%; border-radius: 6px; padding: 4px 6px; font-size: 10px;" title="Sembunyikan panel">
+                        <i class="fas fa-chevron-down" id="sheet-toggle-icon"></i> Sembunyikan
+                    </button>
+                </div>
+                
+                <!-- Horizontal Timeline of Cards -->
+                <div class="sheet-timeline-block" id="sheet-timeline-list">
+                    <!-- Cards will be dynamically injected here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Global variables
+        let map;
+        let markerCluster;
+        let roadLayerGroup;
+        let allFeatures = [];
+        let mapMarkers = {}; // Store marker refs keyed by gid
+        
+        // Tab system variables
+        let activeTab = 'tab-lokasi';
+
+        // Analytics variables
+        let statsDataCached = null;
+        let provChartInstance = null;
+        let cityChartInstance = null;
+        let densityChartInstance = null;
+
+        // Routing variables
+        let routingControl = null;
+        let routeMarkersGroup;
+        let routeSPKLULayerGroup;
+        let routeSegmentsLayerGroup;
+        
+        let startEndpoint = null; // { latlng: [lat, lng], name: "..." }
+        let endEndpoint = null;   // { latlng: [lat, lng], name: "..." }
+        let pickingMode = 'none'; // 'start', 'end', 'none'
+        let currentRouteLatLngs = []; // Store coordinates of current route
+        let userLocationMarker = null; // Store user GPS marker
+        let gpsWatchId = null;         // Real-time GPS watch ID
+        let lastRouteCalcLatLng = null;// Coordinate of last route calculation to throttle updates
+
+        // Initialize Map
+        function initMap() {
+            // Center of Indonesia coordinates
+            const center = [-2.5489, 118.0149]; 
+            
+            map = L.map('map', {
+                zoomControl: false 
+            }).setView(center, 5);
+
+            // Sleek Dark Mode tiles (CartoDB Dark Matter)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a> | Data: BIG, BPS, GIS Hub Kemenhub',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            L.control.zoom({
+                position: 'bottomright'
+            }).addTo(map);
+
+            // Initialize layers
+            markerCluster = L.markerClusterGroup({
+                showCoverageOnHover: false,
+                maxClusterRadius: 50,
+                iconCreateFunction: function(cluster) {
+                    const childCount = cluster.getChildCount();
+                    let c = ' marker-cluster-';
+                    if (childCount < 10) {
+                        c += 'small';
+                    } else if (childCount < 50) {
+                        c += 'medium';
+                    } else {
+                        c += 'large';
+                    }
+                    return new L.DivIcon({ 
+                        html: '<div><span>' + childCount + '</span></div>', 
+                        className: 'marker-cluster' + c, 
+                        iconSize: new L.Point(40, 40) 
+                    });
+                }
+            });
+            map.addLayer(markerCluster);
+
+            roadLayerGroup = L.layerGroup().addTo(map);
+
+            // Initialize route layers
+            routeMarkersGroup = L.layerGroup().addTo(map);
+            routeSPKLULayerGroup = L.layerGroup().addTo(map);
+            routeSegmentsLayerGroup = L.layerGroup().addTo(map);
+            
+            // Initialize Routing Control
+            initRouting();
+
+
+
+            // Right click context menu for quick routing selection
+            map.on('contextmenu', function(e) {
+                const popupContent = `
+                    <div class="popup-card" style="padding: 5px;">
+                        <h4 style="font-size:12px; margin-bottom:8px; color:var(--text-light); text-align:center;">Navigasi Rute</h4>
+                        <button class="route-popup-btn btn-start" onclick="setRouteEndpoint('start', ${e.latlng.lat}, ${e.latlng.lng}, 'Titik Kustom (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})'); map.closePopup();">
+                            <i class="fas fa-play"></i> Mulai dari Sini
+                        </button>
+                        <button class="route-popup-btn btn-end" style="margin-top: 6px;" onclick="setRouteEndpoint('end', ${e.latlng.lat}, ${e.latlng.lng}, 'Titik Kustom (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})'); map.closePopup();">
+                            <i class="fas fa-flag-checkered"></i> Ke Sini
+                        </button>
+                    </div>
+                `;
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(popupContent)
+                    .openOn(map);
+            });
+
+            // Map click listener for coordinate picker mode
+            map.on('click', function(e) {
+                if (pickingMode === 'start') {
+                    startEndpoint = { latlng: [e.latlng.lat, e.latlng.lng], name: `Koordinat Peta (${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)})` };
+                    document.getElementById('route-start-input').value = startEndpoint.name;
+                    setPickingMode('none');
+                    checkRouteReady();
+                } else if (pickingMode === 'end') {
+                    endEndpoint = { latlng: [e.latlng.lat, e.latlng.lng], name: `Koordinat Peta (${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)})` };
+                    document.getElementById('route-end-input').value = endEndpoint.name;
+                    setPickingMode('none');
+                    checkRouteReady();
+                }
+            });
+        }
+
+        // Fetch SPKLU GeoJSON, Road Network, and Stats
+        async function loadData() {
+            try {
+                // Fetch stats
+                const statsRes = await fetch('/api/stats');
+                const statsData = await statsRes.json();
+                statsDataCached = statsData; // Save cache globally
+                
+                // Fetch SPKLU Points
+                const spkluRes = await fetch('/api/spklu');
+                const spkluData = await spkluRes.json();
+                
+                allFeatures = spkluData.features;
+                
+                document.getElementById('stats-total').innerHTML = `${allFeatures.length} <span class="stats-unit">Stasiun</span>`;
+                document.getElementById('stats-total-analitik').innerHTML = `${statsData.total} <span class="stats-unit">Titik Charger</span>`;
+                
+                populateFilters(allFeatures);
+                renderSPKLU(allFeatures);
+
+                // Fetch and draw National Road Network Lines
+                loadRoadNetwork();
+
+            } catch (err) {
+                console.error("Gagal memuat data:", err);
+                document.getElementById('spklu-list').innerHTML = `<div class="empty-list" style="color: #ff4a4a;"><i class="fas fa-exclamation-triangle"></i> Gagal terhubung ke database Supabase.</div>`;
+            }
+        }
+
+        // Parse Overpass JSON to GeoJSON
+        function overpassToGeoJSON(overpassJson) {
+            const nodes = {};
+            const features = [];
+            
+            if (!overpassJson || !overpassJson.elements) {
+                return { type: 'FeatureCollection', features: [] };
+            }
+            
+            // First pass: index all nodes
+            overpassJson.elements.forEach(el => {
+                if (el.type === 'node') {
+                    nodes[el.id] = [el.lon, el.lat];
+                }
+            });
+            
+            // Second pass: construct lines
+            overpassJson.elements.forEach(el => {
+                if (el.type === 'way' && el.nodes) {
+                    const coordinates = el.nodes
+                        .map(nodeId => nodes[nodeId])
+                        .filter(coord => coord !== undefined);
+                        
+                    if (coordinates.length >= 2) {
+                        features.push({
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: coordinates
+                            },
+                            properties: {
+                                id: el.id,
+                                name: el.tags ? (el.tags.name || el.tags.ref || 'Jalan Tanpa Nama') : 'Jalan Tanpa Nama',
+                                highway: el.tags ? el.tags.highway : 'road',
+                                ref: el.tags ? el.tags.ref : '',
+                                maxspeed: el.tags ? el.tags.maxspeed : '',
+                                isOSM: true
+                            }
+                        });
+                    }
+                }
+            });
+            
+            return {
+                type: 'FeatureCollection',
+                features: features
+            };
+        }
+
+        // Fetch and draw Road network on the map (Hybrid: Local DB + OSM Overpass, focused on Active Route)
+        let roadLoading = false;
+        async function loadRoadNetwork() {
+            if (roadLoading) return;
+            
+            // Only load if the layer checkbox is checked
+            const roadToggle = document.getElementById('toggle-road-layer');
+            if (roadToggle && !roadToggle.checked) return;
+
+            // Only load if there is an active route
+            const hasActiveRoute = (currentRouteLatLngs && currentRouteLatLngs.length > 0);
+            if (!hasActiveRoute) {
+                roadLayerGroup.clearLayers();
+                return;
+            }
+
+            roadLoading = true;
+            try {
+                // Compute bounds of the active route
+                let minLat = Infinity, maxLat = -Infinity;
+                let minLng = Infinity, maxLng = -Infinity;
+                currentRouteLatLngs.forEach(coord => {
+                    minLat = Math.min(minLat, coord[0]);
+                    maxLat = Math.max(maxLat, coord[0]);
+                    minLng = Math.min(minLng, coord[1]);
+                    maxLng = Math.max(maxLng, coord[1]);
+                });
+                
+                // Add a small padding (approx 4-5km) around the route bounding box
+                const padding = 0.03;
+                const south = minLat - padding;
+                const west = minLng - padding;
+                const north = maxLat + padding;
+                const east = maxLng + padding;
+                
+                const latSpan = Math.abs(north - south);
+                const lngSpan = Math.abs(east - west);
+                
+                let roadData;
+                let isOSM = false;
+
+                // If it is a short/medium route (span < 0.6 degrees), fetch detailed roads from Overpass API
+                if (latSpan < 0.6 && lngSpan < 0.6) {
+                    // Query motorways, trunk, primary, secondary, tertiary roads in the route bbox
+                    const overpassQuery = `[out:json][timeout:15];(way["highway"~"motorway|trunk|primary|secondary|tertiary"](${south},${west},${north},${east}););out body;>;out skel qt;`;
+                    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+                    
+                    try {
+                        const roadRes = await fetch(url);
+                        if (!roadRes.ok) throw new Error("Overpass API returned status " + roadRes.status);
+                        const overpassData = await roadRes.json();
+                        roadData = overpassToGeoJSON(overpassData);
+                        isOSM = true;
+                    } catch (overpassErr) {
+                        console.warn("Overpass API gagal, menggunakan fallback database lokal:", overpassErr);
+                        // Fallback to local DB
+                        const bbox = [west, south, east, north].join(',');
+                        const localUrl = `/api/routes/road?zoom=11&bbox=${bbox}`;
+                        const roadRes = await fetch(localUrl);
+                        roadData = await roadRes.json();
+                    }
+                } else {
+                    // If it is a long-distance route, fetch national roads from local PostGIS database using the route bbox
+                    const bbox = [west, south, east, north].join(',');
+                    // Use a moderate zoom simulation level to fetch simplified roads
+                    const localUrl = `/api/routes/road?zoom=9&bbox=${bbox}`;
+                    const roadRes = await fetch(localUrl);
+                    roadData = await roadRes.json();
+                }
+                
+                // Clear old road lines
+                roadLayerGroup.clearLayers();
+                
+                L.geoJSON(roadData, {
+                    style: function(feature) {
+                        const props = feature.properties;
+                        let color = '#60efff'; // Default Cyan
+                        let weight = 2;
+                        
+                        if (props.isOSM) {
+                            switch (props.highway) {
+                                case 'motorway':
+                                    color = '#ff3366'; // Pink/Red for Toll/Highway
+                                    weight = 3.5;
+                                    break;
+                                case 'trunk':
+                                    color = '#60efff'; // Cyan for National Trunk Road
+                                    weight = 3;
+                                    break;
+                                case 'primary':
+                                    color = '#00ff87'; // Bright Green for Provincial/Primary Road
+                                    weight = 2.5;
+                                    break;
+                                case 'secondary':
+                                    color = '#ffea00'; // Yellow for Secondary Road
+                                    weight = 2;
+                                    break;
+                                case 'tertiary':
+                                    color = '#ffa500'; // Orange for Tertiary Road
+                                    weight = 1.5;
+                                    break;
+                                default:
+                                    color = '#9ca3af'; // Gray for others
+                                    weight = 1.2;
+                            }
+                        } else {
+                            weight = zoom >= 9 ? 2 : 1.2;
+                        }
+                        
+                        return {
+                            color: color,
+                            weight: weight,
+                            opacity: 0.85
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties && feature.properties.name) {
+                            const props = feature.properties;
+                            let tagHtml = '';
+                            let detailHtml = '';
+                            
+                            if (props.isOSM) {
+                                let typeLabel = 'Jalan Utama';
+                                let tagBg = 'rgba(96, 239, 255, 0.15)';
+                                let tagBorder = 'rgba(96, 239, 255, 0.3)';
+                                let tagColor = 'var(--accent-cyan)';
+                                
+                                if (props.highway === 'motorway') {
+                                    typeLabel = 'Jalan Tol';
+                                    tagBg = 'rgba(255, 51, 102, 0.15)';
+                                    tagBorder = 'rgba(255, 51, 102, 0.3)';
+                                    tagColor = '#ff3366';
+                                } else if (props.highway === 'primary') {
+                                    typeLabel = 'Jalan Provinsi';
+                                    tagBg = 'rgba(0, 255, 135, 0.15)';
+                                    tagBorder = 'rgba(0, 255, 135, 0.3)';
+                                    tagColor = 'var(--accent-green)';
+                                } else if (props.highway === 'secondary') {
+                                    typeLabel = 'Jalan Kabupaten/Kota';
+                                    tagBg = 'rgba(255, 234, 0, 0.15)';
+                                    tagBorder = 'rgba(255, 234, 0, 0.3)';
+                                    tagColor = '#ffea00';
+                                } else if (props.highway === 'tertiary') {
+                                    typeLabel = 'Jalan Lokal';
+                                    tagBg = 'rgba(255, 165, 0, 0.15)';
+                                    tagBorder = 'rgba(255, 165, 0, 0.3)';
+                                    tagColor = '#ffa500';
+                                }
+                                
+                                tagHtml = `<span class="popup-tag" style="background: ${tagBg}; border-color: ${tagBorder}; color: ${tagColor};">${typeLabel} (OSM)</span>`;
+                                detailHtml = `
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-layer-group"></i>
+                                        <span><strong>Tipe:</strong> ${props.highway}</span>
+                                    </div>
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-tag"></i>
+                                        <span><strong>Kode Jalan:</strong> ${props.ref || '-'}</span>
+                                    </div>
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        <span><strong>Batas Kecepatan:</strong> ${props.maxspeed || '-'}</span>
+                                    </div>
+                                `;
+                            } else {
+                                tagHtml = `<span class="popup-tag" style="background: rgba(96, 239, 255, 0.15); border-color: rgba(96, 239, 255, 0.3); color: var(--accent-cyan);">Jalan Nasional (DB)</span>`;
+                                detailHtml = `
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-layer-group"></i>
+                                        <span><strong>Kelas:</strong> ${props.class || '-'}</span>
+                                    </div>
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-tag"></i>
+                                        <span><strong>Fungsi:</strong> ${props.function || '-'}</span>
+                                    </div>
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span><strong>Status:</strong> ${props.status || '-'}</span>
+                                    </div>
+                                    <div class="popup-detail-item">
+                                        <i class="fas fa-ruler-horizontal"></i>
+                                        <span><strong>Panjang:</strong> ${parseFloat(props.length).toFixed(2)} km</span>
+                                    </div>
+                                `;
+                            }
+                            
+                            const popupContent = `
+                                <div class="popup-card">
+                                    ${tagHtml}
+                                    <h3 class="popup-title">${props.name}</h3>
+                                    <div class="popup-details">
+                                        ${detailHtml}
+                                    </div>
+                                </div>
+                            `;
+                            layer.bindPopup(popupContent);
+                        }
+                    }
+                }).addTo(roadLayerGroup);
+            } catch (err) {
+                console.error("Gagal memuat jaringan jalan:", err);
+            } finally {
+                roadLoading = false;
+            }
+        }
+
+        // Populate Province select options
+        function populateFilters(features) {
+            const provinces = [...new Set(features.map(f => f.properties.province).filter(Boolean))].sort();
+            const select = document.getElementById('province-filter');
+            
+            provinces.forEach(prov => {
+                const opt = document.createElement('option');
+                opt.value = prov;
+                opt.textContent = prov;
+                select.appendChild(opt);
+            });
+        }
+
+        // Render SPKLU to Map and Sidebar List
+        // Global name store: avoids onclick string injection issues with names containing quotes
+        const spkluNameStore = {};
+
+        function renderSPKLU(features) {
+            markerCluster.clearLayers();
+            const listContainer = document.getElementById('spklu-list');
+            listContainer.innerHTML = '';
+            mapMarkers = {};
+            
+            // Dynamically update stats count card in the sidebar tab
+            const statsTotalEl = document.getElementById('stats-total');
+            if (statsTotalEl) {
+                statsTotalEl.innerHTML = `${features.length} <span class="stats-unit">Stasiun</span>`;
+            }
+
+            if (features.length === 0) {
+                listContainer.innerHTML = '<div class="empty-list">Tidak ada lokasi yang cocok.</div>';
+                return;
+            }
+
+            features.forEach(feature => {
+                const props = feature.properties;
+                const geomType = feature.geometry.type;
+                let latlng;
+                
+                if (geomType === 'MultiPoint') {
+                    const coords = feature.geometry.coordinates[0];
+                    latlng = [coords[1], coords[0]];
+                } else {
+                    const coords = feature.geometry.coordinates;
+                    latlng = [coords[1], coords[0]];
+                }
+
+                const customIcon = L.divIcon({
+                    className: 'custom-spklu-marker',
+                    html: `<div class="charger-dot"></div>`,
+                    iconSize: [14, 14],
+                    iconAnchor: [7, 7],
+                    popupAnchor: [0, -10]
+                });
+
+                // Store name by GID — safer than injecting strings into onclick
+                spkluNameStore[props.gid] = props.name;
+
+                const popupContent = `
+                    <div class="popup-card">
+                        <span class="popup-tag">SPKLU Listrik</span>
+                        <h3 class="popup-title">${props.name}</h3>
+                        <p class="popup-address"><i class="fas fa-map-marker-alt"></i> ${props.address}</p>
+                        <div class="popup-details">
+                            <div class="popup-detail-item">
+                                <i class="fas fa-city"></i>
+                                <span><strong>Kota/Kab:</strong> ${props.city || '-'}</span>
+                            </div>
+                            <div class="popup-detail-item">
+                                <i class="fas fa-map"></i>
+                                <span><strong>Provinsi:</strong> ${props.province || '-'}</span>
+                            </div>
+                            <div class="popup-detail-item">
+                                <i class="fas fa-compass"></i>
+                                <span><strong>Koordinat:</strong> ${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)}</span>
+                            </div>
+                        </div>
+                        <div class="route-buttons-container">
+                            <button class="route-popup-btn btn-start" onclick="setRouteEndpoint('start', ${latlng[0]}, ${latlng[1]}, spkluNameStore[${props.gid}])">
+                                <i class="fas fa-play"></i> Mulai Rute
+                            </button>
+                            <button class="route-popup-btn btn-end" onclick="setRouteEndpoint('end', ${latlng[0]}, ${latlng[1]}, spkluNameStore[${props.gid}])">
+                                <i class="fas fa-flag-checkered"></i> Ke Sini
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                const marker = L.marker(latlng, { icon: customIcon }).bindPopup(popupContent);
+                mapMarkers[props.gid] = marker;
+                markerCluster.addLayer(marker);
+
+                marker.on('popupopen', () => {
+                    highlightSidebarItem(props.gid);
+                });
+
+                const item = document.createElement('div');
+                item.className = 'spklu-item';
+                item.id = `spklu-item-${props.gid}`;
+                item.innerHTML = `
+                    <div class="spklu-item-name">${props.name}</div>
+                    <div class="spklu-item-info">
+                        <i class="fas fa-city"></i> ${props.city || '-'} (${props.province || '-'})
+                    </div>
+                `;
+
+                item.addEventListener('click', () => {
+                    map.setView(latlng, 15);
+                    marker.openPopup();
+                    highlightSidebarItem(props.gid);
+                });
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Highlight active item in sidebar list
+        function highlightSidebarItem(gid) {
+            document.querySelectorAll('.spklu-item').forEach(el => el.classList.remove('active'));
+            const activeItem = document.getElementById(`spklu-item-${gid}`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+                activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function matchProvider(props, providerVal) {
+            if (!providerVal) return true;
+            const nameLower = (props.name || '').toLowerCase();
+            if (providerVal === 'pln') {
+                return nameLower.includes('pln') || 
+                       nameLower.includes('ulp') || 
+                       nameLower.includes('up3') || 
+                       nameLower.includes('kantor jaga') || 
+                       nameLower.includes('center');
+            }
+            if (providerVal === 'voltron') return nameLower.includes('voltron');
+            if (providerVal === 'terra') return nameLower.includes('terra');
+            if (providerVal === 'hyundai') return nameLower.includes('hyundai');
+            if (providerVal === 'starvo') return nameLower.includes('starvo');
+            if (providerVal === 'wuling') return nameLower.includes('wuling');
+            if (providerVal === 'toyota_lexus') {
+                return nameLower.includes('toyota') || 
+                       nameLower.includes('lexus') || 
+                       nameLower.includes('auto2000');
+            }
+            if (providerVal === 'charge_plus') {
+                return nameLower.includes('charge+') || 
+                       nameLower.includes('utomo');
+            }
+            if (providerVal === 'arista') return nameLower.includes('arista');
+            if (providerVal === 'dayagreen') return nameLower.includes('dayagreen');
+            if (providerVal === 'bluecharge') return nameLower.includes('bluecharge');
+            if (providerVal === 'stroom') return nameLower.includes('stroom');
+            if (providerVal === 'other') {
+                return !nameLower.includes('pln') && 
+                       !nameLower.includes('ulp') && 
+                       !nameLower.includes('up3') && 
+                       !nameLower.includes('kantor jaga') && 
+                       !nameLower.includes('center') && 
+                       !nameLower.includes('voltron') && 
+                       !nameLower.includes('terra') && 
+                       !nameLower.includes('hyundai') && 
+                       !nameLower.includes('starvo') && 
+                       !nameLower.includes('wuling') && 
+                       !nameLower.includes('toyota') && 
+                       !nameLower.includes('lexus') && 
+                       !nameLower.includes('auto2000') && 
+                       !nameLower.includes('charge+') && 
+                       !nameLower.includes('utomo') && 
+                       !nameLower.includes('arista') && 
+                       !nameLower.includes('dayagreen') && 
+                       !nameLower.includes('bluecharge') && 
+                       !nameLower.includes('stroom');
+            }
+            return true;
+        }
+
+        // Search and Filter Trigger logic
+        function filterLocations() {
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const provinceVal = document.getElementById('province-filter').value;
+            const providerVal = document.getElementById('provider-filter').value;
+
+            const filtered = allFeatures.filter(feature => {
+                const props = feature.properties;
+                const matchSearch = !searchVal || 
+                    (props.name && props.name.toLowerCase().includes(searchVal)) ||
+                    (props.address && props.address.toLowerCase().includes(searchVal)) ||
+                    (props.city && props.city.toLowerCase().includes(searchVal));
+                    
+                const matchProvince = !provinceVal || props.province === provinceVal;
+                const matchOperator = matchProvider(props, providerVal);
+
+                return matchSearch && matchProvince && matchOperator;
+            });
+
+            renderSPKLU(filtered);
+
+            // Dynamically update SPKLU along route if active route exists
+            if (currentRouteLatLngs && currentRouteLatLngs.length > 0) {
+                filterSPKLUAlongRoute();
+            }
+        }
+
+        // --- TAB SYSTEM LOGIC ---
+        function switchTab(targetTabId) {
+            activeTab = targetTabId;
+            
+            // Toggle active classes on tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (btn.getAttribute('data-target') === targetTabId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Toggle active classes on tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                if (panel.id === targetTabId) {
+                    panel.classList.add('active');
+                } else {
+                    panel.classList.remove('active');
+                }
+            });
+            
+            // Trigger charts rendering if Analitik tab is opened
+            if (targetTabId === 'tab-analitik') {
+                setTimeout(initAnalyticsCharts, 50);
+            }
+            
+            // Disable picking mode if we leave the routing tab
+            if (targetTabId !== 'tab-rute') {
+                setPickingMode('none');
+            }
+        }
+
+        // --- VISUALISASI ANALITIK LANJUTAN (CHART.JS) ---
+        function initAnalyticsCharts() {
+            if (!statsDataCached) return;
+            
+            const topProvs = statsDataCached.provinces.slice(0, 5);
+            const provLabels = topProvs.map(p => p.province);
+            const provCounts = topProvs.map(p => p.count);
+            
+            const topCities = statsDataCached.cities.slice(0, 5);
+            const cityLabels = topCities.map(c => c.city);
+            const cityCounts = topCities.map(c => c.count);
+            
+            const topDensities = statsDataCached.densities.slice(0, 5);
+            const densityLabels = topDensities.map(d => d.city);
+            const densityRatios = topDensities.map(d => d.ratio);
+            
+            if (provChartInstance) provChartInstance.destroy();
+            if (cityChartInstance) cityChartInstance.destroy();
+            if (densityChartInstance) densityChartInstance.destroy();
+            
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Inter', size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Inter', size: 10 } }
+                    }
+                }
+            };
+            
+            const ctxProv = document.getElementById('provChart').getContext('2d');
+            provChartInstance = new Chart(ctxProv, {
+                type: 'bar',
+                data: {
+                    labels: provLabels,
+                    datasets: [{
+                        data: provCounts,
+                        backgroundColor: 'rgba(0, 255, 135, 0.75)',
+                        borderColor: '#00ff87',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    indexAxis: 'y'
+                }
+            });
+            
+            const ctxCity = document.getElementById('cityChart').getContext('2d');
+            cityChartInstance = new Chart(ctxCity, {
+                type: 'doughnut',
+                data: {
+                    labels: cityLabels,
+                    datasets: [{
+                        data: cityCounts,
+                        backgroundColor: [
+                            'rgba(96, 239, 255, 0.75)',
+                            'rgba(0, 255, 135, 0.75)',
+                            'rgba(255, 215, 0, 0.75)',
+                            'rgba(255, 105, 180, 0.75)',
+                            'rgba(147, 112, 219, 0.75)'
+                        ],
+                        borderColor: 'rgba(18, 25, 41, 0.8)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: '#9ca3af',
+                                boxWidth: 10,
+                                font: { family: 'Inter', size: 9 }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const ctxDensity = document.getElementById('densityChart').getContext('2d');
+            densityChartInstance = new Chart(ctxDensity, {
+                type: 'bar',
+                data: {
+                    labels: densityLabels,
+                    datasets: [{
+                        data: densityRatios,
+                        backgroundColor: 'rgba(255, 215, 0, 0.75)',
+                        borderColor: '#ffd700',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: chartOptions
+            });
+        }
+
+        // --- ANALISIS RUTE & PENCARIAN SPKLU TERDEKAT (LEAFLET ROUTING MACHINE) ---
+        function initRouting() {
+            const osmRouter = L.Routing.osrmv1({
+                serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1',
+                profile: 'driving'
+            });
+
+            routingControl = L.Routing.control({
+                waypoints: [],
+                router: osmRouter,
+                routeWhileDragging: false,
+                addWaypoints: false,
+                fitSelectedRoutes: true,
+                show: false, 
+                createMarker: function(i, wp, n) {
+                    const isStart = i === 0;
+                    const color = isStart ? 'var(--accent-green)' : '#ff4a4a';
+                    const iconHtml = `<div class="marker-pin" style="background: ${color}; transform: rotate(-45deg); width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border: 2px solid #0d1117; box-shadow: 0 0 15px rgba(0,0,0,0.5);"><i class="fas ${isStart ? 'fa-play' : 'fa-flag-checkered'}" style="transform: rotate(45deg); color: #050810; font-size: 11px;"></i></div>`;
+                    
+                    return L.marker(wp.latLng, {
+                        draggable: true,
+                        icon: L.divIcon({
+                            className: 'custom-route-marker',
+                            html: iconHtml,
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 32]
+                        })
+                    }).on('dragend', function(e) {
+                        const newLatLng = e.target.getLatLng();
+                        if (isStart) {
+                            startEndpoint = { latlng: [newLatLng.lat, newLatLng.lng], name: `Titik Seret (${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)})` };
+                            document.getElementById('route-start-input').value = startEndpoint.name;
+                        } else {
+                            endEndpoint = { latlng: [newLatLng.lat, newLatLng.lng], name: `Titik Seret (${newLatLng.lat.toFixed(5)}, ${newLatLng.lng.toFixed(5)})` };
+                            document.getElementById('route-end-input').value = endEndpoint.name;
+                        }
+                        calculateRoute();
+                    });
+                },
+                lineOptions: {
+                    styles: [
+                        { opacity: 0 }
+                    ]
+                }
+            }).addTo(map);
+
+            const container = routingControl.getContainer();
+            if (container) container.style.display = 'none';
+
+            routingControl.on('routesfound', function(e) {
+                const routes = e.routes;
+                const summary = routes[0].summary;
+                
+                document.getElementById('route-results-panel').style.display = 'block';
+                document.getElementById('btn-clear-route').style.display = 'inline-flex';
+                
+                const distanceKm = (summary.totalDistance / 1000).toFixed(1);
+                const timeMin = Math.round(summary.totalTime / 60);
+                let timeStr = `${timeMin} Menit`;
+                if (timeMin >= 60) {
+                    const hrs = Math.floor(timeMin / 60);
+                    const mins = timeMin % 60;
+                    timeStr = `${hrs} Jam ${mins} Menit`;
+                }
+                
+                document.getElementById('route-dist-val').innerText = `${distanceKm} km`;
+                document.getElementById('route-time-val').innerText = timeStr;
+
+                // Update bottom sheet values and display it
+                document.getElementById('sheet-dist-val').innerText = `${distanceKm} km`;
+                document.getElementById('sheet-time-val').innerText = timeStr;
+                
+                const sheet = document.getElementById('route-bottom-sheet');
+                sheet.style.display = 'flex';
+                sheet.classList.remove('collapsed-sheet');
+                
+                const showTimelineBtn = document.getElementById('btn-show-timeline');
+                if (showTimelineBtn) showTimelineBtn.style.display = 'none';
+                
+                const mapLegend = document.getElementById('map-legend');
+                if (mapLegend) mapLegend.classList.add('shifted-legend');
+                
+                const legendBatteryGaps = document.getElementById('legend-battery-gaps');
+                if (legendBatteryGaps) legendBatteryGaps.style.display = 'flex';
+                
+                const toggleSheetBtn = document.getElementById('btn-toggle-sheet');
+                if (toggleSheetBtn) {
+                    toggleSheetBtn.innerHTML = '<i class="fas fa-chevron-down" id="sheet-toggle-icon"></i> Sembunyikan';
+                }
+                
+                currentRouteLatLngs = routes[0].coordinates.map(c => [c.lat, c.lng]);
+                filterSPKLUAlongRoute();
+                loadRoadNetwork();
+            });
+
+            routingControl.on('routingerror', function(err) {
+                console.error("Routing error:", err);
+                alert("Gagal menemukan rute jalan darat antara titik-titik tersebut.");
+            });
+        }
+
+        function setRouteEndpoint(type, lat, lng, name) {
+            const endpoint = { latlng: [lat, lng], name: name };
+            if (type === 'start') {
+                startEndpoint = endpoint;
+                document.getElementById('route-start-input').value = name;
+            } else {
+                endEndpoint = endpoint;
+                document.getElementById('route-end-input').value = name;
+            }
+            switchTab('tab-rute');
+            checkRouteReady();
+        }
+
+        function setPickingMode(mode) {
+            pickingMode = mode;
+            document.querySelectorAll('.route-action-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (mode === 'start') {
+                document.getElementById('btn-pick-start').classList.add('active');
+                map.getContainer().style.cursor = 'crosshair';
+            } else if (mode === 'end') {
+                document.getElementById('btn-pick-end').classList.add('active');
+                map.getContainer().style.cursor = 'crosshair';
+            } else {
+                map.getContainer().style.cursor = '';
+            }
+        }
+
+        function updateGPSPosition(lat, lng, isInitial) {
+            startEndpoint = {
+                latlng: [lat, lng],
+                name: "Lokasi GPS Saya"
+            };
+            document.getElementById('route-start-input').value = "Lokasi GPS Saya";
+            checkRouteReady();
+            
+            // Add/update GPS Marker on map
+            const gpsIcon = L.divIcon({
+                className: 'user-gps-marker',
+                html: '<div class="gps-pulse-ring"></div><div class="gps-dot"></div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+            
+            if (userLocationMarker) {
+                userLocationMarker.setLatLng([lat, lng]);
+            } else {
+                userLocationMarker = L.marker([lat, lng], { icon: gpsIcon }).addTo(map);
+            }
+            userLocationMarker.bindPopup("<b>Lokasi GPS Anda</b>");
+            
+            // Pan to user location if initial or if route bottom sheet is open (navigation mode)
+            if (isInitial || activeTab === 'tab-rute') {
+                map.setView([lat, lng], 15);
+            }
+            
+            // Dynamic route update check: recalculate route if they moved more than 100 meters
+            if (endEndpoint) {
+                if (!lastRouteCalcLatLng) {
+                    lastRouteCalcLatLng = [lat, lng];
+                    calculateRoute();
+                } else {
+                    const movedDist = getHaversineDistance(lastRouteCalcLatLng[0], lastRouteCalcLatLng[1], lat, lng);
+                    if (movedDist >= 0.1) { // 100 meters
+                        lastRouteCalcLatLng = [lat, lng];
+                        calculateRoute();
+                    }
+                }
+            }
+        }
+
+        function getUserLocation() {
+            const gpsBtn = document.getElementById('btn-gps-start');
+            
+            if (!navigator.geolocation) {
+                alert("Browser Anda tidak mendukung layanan lokasi GPS.");
+                return;
+            }
+            
+            // If GPS watch is already active, turn it off
+            if (gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(gpsWatchId);
+                gpsWatchId = null;
+                gpsBtn.classList.remove('gps-tracking-active');
+                gpsBtn.title = "Gunakan Lokasi GPS Saya";
+                
+                if (userLocationMarker) {
+                    map.removeLayer(userLocationMarker);
+                    userLocationMarker = null;
+                }
+                
+                if (startEndpoint && startEndpoint.name === "Lokasi GPS Saya") {
+                    startEndpoint = null;
+                    document.getElementById('route-start-input').value = '';
+                    checkRouteReady();
+                }
+                lastRouteCalcLatLng = null;
+                return;
+            }
+            
+            // Set loading state on button
+            gpsBtn.disabled = true;
+            gpsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Get initial position first
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    gpsBtn.disabled = false;
+                    gpsBtn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+                    gpsBtn.classList.add('gps-tracking-active');
+                    gpsBtn.title = "Matikan Pelacakan GPS";
+                    
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    updateGPSPosition(lat, lng, true);
+                    
+                    // Start watching position continuously
+                    gpsWatchId = navigator.geolocation.watchPosition(
+                        function(watchPos) {
+                            const wLat = watchPos.coords.latitude;
+                            const wLng = watchPos.coords.longitude;
+                            
+                            // Check if startEndpoint is still GPS. If user changed starting point manually, stop tracking
+                            if (startEndpoint && startEndpoint.name === "Lokasi GPS Saya") {
+                                updateGPSPosition(wLat, wLng, false); // Update marker and endpoint
+                            } else {
+                                // Stop tracking if they picked another point
+                                if (gpsWatchId !== null) {
+                                    navigator.geolocation.clearWatch(gpsWatchId);
+                                    gpsWatchId = null;
+                                    gpsBtn.classList.remove('gps-tracking-active');
+                                }
+                            }
+                        },
+                        function(err) {
+                            console.warn("Kesalahan pelacakan lokasi:", err);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                },
+                function(error) {
+                    gpsBtn.disabled = false;
+                    gpsBtn.innerHTML = '<i class="fas fa-crosshairs"></i>';
+                    let errMsg = "Gagal mendapatkan lokasi GPS Anda.";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errMsg = "Akses lokasi ditolak oleh pengguna.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errMsg = "Informasi lokasi tidak tersedia.";
+                            break;
+                        case error.TIMEOUT:
+                            errMsg = "Waktu pencarian lokasi habis (timeout).";
+                            break;
+                    }
+                    alert(errMsg);
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            );
+        }
+
+        function checkRouteReady() {
+            const btn = document.getElementById('btn-calculate-route');
+            if (startEndpoint && endEndpoint) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function calculateRoute() {
+            if (!startEndpoint || !endEndpoint) return;
+            
+            const profile = document.getElementById('route-profile-select').value;
+            let serviceUrl = 'https://routing.openstreetmap.de/routed-car/route/v1';
+            let profileName = 'driving';
+            
+            if (profile === 'motorcycle') {
+                // Use the bicycle routing profile to avoid tollroads/motorways completely for motorcycles
+                serviceUrl = 'https://routing.openstreetmap.de/routed-bike/route/v1';
+                profileName = 'bicycle';
+            }
+            
+            const router = routingControl.getRouter() || routingControl.router;
+            if (router) {
+                router.options.serviceUrl = serviceUrl;
+                router.options.profile = profileName;
+                
+                // Clear any leftover parameters to ensure no InvalidValue errors are returned
+                if (router.options.routingOptions) {
+                    delete router.options.routingOptions.exclude;
+                }
+                if (router.options.urlParameters) {
+                    delete router.options.urlParameters.exclude;
+                }
+                if (router.options.extraParams) {
+                    delete router.options.extraParams.exclude;
+                }
+            }
+            
+            routingControl.setWaypoints([
+                L.latLng(startEndpoint.latlng[0], startEndpoint.latlng[1]),
+                L.latLng(endEndpoint.latlng[0], endEndpoint.latlng[1])
+            ]);
+        }
+
+        function clearRoute() {
+            startEndpoint = null;
+            endEndpoint = null;
+            currentRouteLatLngs = [];
+            
+            document.getElementById('route-start-input').value = '';
+            document.getElementById('route-end-input').value = '';
+            document.getElementById('btn-calculate-route').disabled = true;
+            document.getElementById('btn-clear-route').style.display = 'none';
+            document.getElementById('route-results-panel').style.display = 'none';
+            
+            // Reset vehicle profile select dropdown
+            document.getElementById('route-profile-select').value = 'car-toll';
+            
+            // Reset router options back to defaults
+            const router = routingControl.getRouter() || routingControl.router;
+            if (router) {
+                router.options.serviceUrl = 'https://routing.openstreetmap.de/routed-car/route/v1';
+                router.options.profile = 'driving';
+            }
+            
+            // Hide route bottom sheet and reset it
+            const sheet = document.getElementById('route-bottom-sheet');
+            if (sheet) {
+                sheet.style.display = 'none';
+                sheet.classList.remove('collapsed-sheet');
+            }
+            
+            const showTimelineBtn = document.getElementById('btn-show-timeline');
+            if (showTimelineBtn) showTimelineBtn.style.display = 'none';
+            
+            const mapLegend = document.getElementById('map-legend');
+            if (mapLegend) mapLegend.classList.remove('shifted-legend');
+            
+            const legendBatteryGaps = document.getElementById('legend-battery-gaps');
+            if (legendBatteryGaps) legendBatteryGaps.style.display = 'none';
+            
+            // Hide route legend items
+            const greenLegend = document.getElementById('legend-green-item');
+            const orangeLegend = document.getElementById('legend-orange-item');
+            if (greenLegend) greenLegend.style.display = 'none';
+            if (orangeLegend) orangeLegend.style.display = 'none';
+
+            routingControl.setWaypoints([]);
+            
+            map.removeLayer(routeSPKLULayerGroup);
+            if (routeSegmentsLayerGroup) routeSegmentsLayerGroup.clearLayers();
+            map.addLayer(markerCluster);
+            
+            // Clear road network layer when resetting route
+            roadLayerGroup.clearLayers();
+            
+            if (userLocationMarker) {
+                map.removeLayer(userLocationMarker);
+                userLocationMarker = null;
+            }
+            
+            allFeatures.forEach(feature => {
+                const marker = mapMarkers[feature.properties.gid];
+                if (marker) {
+                    markerCluster.addLayer(marker);
+                }
+            });
+        }
+
+        // Distance calculations (Haversine & Segment projection)
+        function getHaversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function distToSegment(lat, lng, lat1, lng1, lat2, lng2) {
+            const dx = lng2 - lng1;
+            const dy = lat2 - lat1;
+            if (dx === 0 && dy === 0) {
+                return getHaversineDistance(lat, lng, lat1, lng1);
+            }
+            let t = ((lng - lng1) * dx + (lat - lat1) * dy) / (dx * dx + dy * dy);
+            t = Math.max(0, Math.min(1, t));
+            const projLat = lat1 + t * dy;
+            const projLng = lng1 + t * dx;
+            return getHaversineDistance(lat, lng, projLat, projLng);
+        }
+
+        function getDistanceFromRoute(pointLatLng, routeLatLngs, maxDistanceKm = 5) {
+            let minDistance = Infinity;
+            const lat = pointLatLng[0];
+            const lng = pointLatLng[1];
+            
+            // Sub-sampling optimization for very long route paths to run in <2ms
+            const step = Math.max(1, Math.floor(routeLatLngs.length / 250)); 
+            
+            for (let i = 0; i < routeLatLngs.length - 1; i += step) {
+                const nextIdx = Math.min(i + step, routeLatLngs.length - 1);
+                const p1 = routeLatLngs[i];
+                const p2 = routeLatLngs[nextIdx];
+                const dist = distToSegment(lat, lng, p1[0], p1[1], p2[0], p2[1]);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                }
+            }
+            return minDistance;
+        }
+
+        function findClosestRouteIndex(latlng, routeLatLngs) {
+            let minDistance = Infinity;
+            let closestIdx = 0;
+            const lat = latlng[0];
+            const lng = latlng[1];
+            
+            for (let i = 0; i < routeLatLngs.length; i++) {
+                const rLat = routeLatLngs[i][0];
+                const rLng = routeLatLngs[i][1];
+                const dist = getHaversineDistance(lat, lng, rLat, rLng);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestIdx = i;
+                }
+            }
+            return closestIdx;
+        }
+
+        function getRouteSegmentDistance(latlngs, idx1, idx2) {
+            let dist = 0;
+            const start = Math.min(idx1, idx2);
+            const end = Math.max(idx1, idx2);
+            for (let i = start; i < end; i++) {
+                dist += getHaversineDistance(latlngs[i][0], latlngs[i][1], latlngs[i+1][0], latlngs[i+1][1]);
+            }
+            return dist;
+        }
+
+        function filterSPKLUAlongRoute() {
+            if (currentRouteLatLngs.length === 0) return;
+            
+            // Show route legend items
+            const greenLegend = document.getElementById('legend-green-item');
+            const orangeLegend = document.getElementById('legend-orange-item');
+            if (greenLegend) greenLegend.style.display = 'flex';
+            if (orangeLegend) orangeLegend.style.display = 'flex';
+            
+            const maxDistanceKm = 5; 
+            const onlyRouteSpklu = document.getElementById('chk-only-route-spklu').checked;
+            const routeSpkluListContainer = document.getElementById('route-spklu-list');
+            routeSpkluListContainer.innerHTML = '';
+            
+            let spkluAlongRoute = [];
+            const providerVal = document.getElementById('provider-filter').value;
+            
+            allFeatures.forEach(feature => {
+                const props = feature.properties;
+                
+                // Filter by operator if selected
+                if (!matchProvider(props, providerVal)) return;
+
+                const geomType = feature.geometry.type;
+                let latlng;
+                
+                if (geomType === 'MultiPoint') {
+                    const coords = feature.geometry.coordinates[0];
+                    latlng = [coords[1], coords[0]];
+                } else {
+                    const coords = feature.geometry.coordinates;
+                    latlng = [coords[1], coords[0]];
+                }
+                
+                const distance = getDistanceFromRoute(latlng, currentRouteLatLngs, maxDistanceKm);
+                if (distance <= maxDistanceKm) {
+                    const routeIndex = findClosestRouteIndex(latlng, currentRouteLatLngs);
+                    spkluAlongRoute.push({
+                        feature: feature,
+                        latlng: latlng,
+                        distance: distance,
+                        routeIndex: routeIndex
+                    });
+                }
+            });
+            
+            // Sort sequentially along the route (from start point to end point)
+            spkluAlongRoute.sort((a, b) => a.routeIndex - b.routeIndex);
+            
+            // Deduplicate/filter out SPKLUs that are at the same physical station or extremely close (e.g. < 0.2 km) on the timeline
+            const cleanedSpkluAlongRoute = [];
+            const seenTimelineLocations = new Set();
+            let lastSpkluIndex = -1;
+            
+            for (let i = 0; i < spkluAlongRoute.length; i++) {
+                const item = spkluAlongRoute[i];
+                
+                // Coordinate deduplication key (handles multiple sockets at the same station)
+                const latRound = item.latlng[0].toFixed(5);
+                const lonRound = item.latlng[1].toFixed(5);
+                const locKey = `${latRound}_${lonRound}`;
+                
+                if (seenTimelineLocations.has(locKey)) continue;
+                
+                // Distance spacing filter (skip if extremely close like < 0.2 km from the previous SPKLU on the route)
+                if (lastSpkluIndex !== -1) {
+                    const distFromLast = getRouteSegmentDistance(currentRouteLatLngs, lastSpkluIndex, item.routeIndex);
+                    if (distFromLast < 0.2) {
+                        continue;
+                    }
+                }
+                
+                seenTimelineLocations.add(locKey);
+                cleanedSpkluAlongRoute.push(item);
+                lastSpkluIndex = item.routeIndex;
+            }
+            spkluAlongRoute = cleanedSpkluAlongRoute;
+            
+            const warningIcon = document.getElementById('route-warning-icon');
+            const warningTitle = document.getElementById('route-warning-title');
+            const sheetTimelineContainer = document.getElementById('sheet-timeline-list');
+            
+            if (sheetTimelineContainer) {
+                sheetTimelineContainer.innerHTML = '';
+            }
+
+            // Construct timeline elements (Mulai -> SPKLUs -> Selesai)
+            const timelineItems = [];
+            timelineItems.push({
+                type: 'start',
+                name: 'Titik Mulai',
+                latlng: currentRouteLatLngs[0],
+                routeIndex: 0
+            });
+
+            spkluAlongRoute.forEach(item => {
+                timelineItems.push({
+                    type: 'spklu',
+                    name: item.feature.properties.name,
+                    latlng: item.latlng,
+                    routeIndex: item.routeIndex,
+                    distance: item.distance,
+                    city: item.feature.properties.city,
+                    province: item.feature.properties.province,
+                    gid: item.feature.properties.gid
+                });
+            });
+
+            timelineItems.push({
+                type: 'end',
+                name: 'Titik Selesai',
+                latlng: currentRouteLatLngs[currentRouteLatLngs.length - 1],
+                routeIndex: currentRouteLatLngs.length - 1
+            });
+
+            // Get battery simulation parameters from UI inputs
+            const enableBatterySim = document.getElementById('chk-enable-battery-sim').checked;
+            const maxRange = parseFloat(document.getElementById('range-max-battery').value) || 150;
+            const startPct = parseFloat(document.getElementById('range-start-battery').value) || 80;
+            const bufferRange = parseFloat(document.getElementById('range-buffer-battery').value) || 20;
+
+            if (enableBatterySim) {
+                // Compute battery status along waypoints
+                let currentRange = maxRange * (startPct / 100);
+                timelineItems.forEach((item, index) => {
+                    if (index === 0) {
+                        item.arrivalRange = currentRange;
+                        item.arrivalPct = startPct;
+                        item.recommendation = "Mulai";
+                        item.recommendationColor = 'var(--accent-green)';
+                        item.departureRange = currentRange;
+                        return;
+                    }
+                    
+                    const prevItem = timelineItems[index - 1];
+                    const gapDist = getRouteSegmentDistance(currentRouteLatLngs, prevItem.routeIndex, item.routeIndex);
+                    
+                    item.arrivalRange = prevItem.departureRange - gapDist;
+                    item.arrivalPct = Math.max(0, Math.round((item.arrivalRange / maxRange) * 100));
+                    
+                    if (item.type === 'spklu') {
+                        // Decide if they should charge here
+                        const nextItem = timelineItems[index + 1];
+                        const distToNext = getRouteSegmentDistance(currentRouteLatLngs, item.routeIndex, nextItem.routeIndex);
+                        
+                        // Recommended to charge if:
+                        // 1. Battery remaining upon arrival is less than buffer range
+                        // 2. Or battery remaining is not enough to reach the next waypoint with buffer
+                        if (item.arrivalRange < bufferRange || item.arrivalRange - distToNext < bufferRange) {
+                            item.chargeAction = true;
+                            item.departureRange = maxRange; // charged to full
+                            item.recommendation = "⚡ Wajib Charge";
+                            item.recommendationColor = '#ffd700'; // Warning/Attention Gold
+                        } else {
+                            item.chargeAction = false;
+                            item.departureRange = item.arrivalRange;
+                            item.recommendation = "🟢 Bisa Lewati";
+                            item.recommendationColor = 'var(--accent-green)';
+                        }
+                    } else if (item.type === 'end') {
+                        item.chargeAction = false;
+                        item.departureRange = item.arrivalRange;
+                        if (item.arrivalRange < 0) {
+                            item.recommendation = "🚨 Baterai Habis!";
+                            item.recommendationColor = '#ff4a4a';
+                        } else if (item.arrivalRange < bufferRange) {
+                            item.recommendation = "⚠️ Baterai Kritis";
+                            item.recommendationColor = '#ffa500';
+                        } else {
+                            item.recommendation = "🟢 Tiba Aman";
+                            item.recommendationColor = 'var(--accent-green)';
+                        }
+                    }
+                });
+            }
+
+            if (spkluAlongRoute.length === 0) {
+                routeSpkluListContainer.innerHTML = '<div class="empty-list" style="color: #ff4a4a; padding: 10px 0;"><i class="fas fa-exclamation-circle" style="font-size: 20px; margin-bottom: 6px; display: block;"></i> Tidak ada stasiun SPKLU di radius 5 km sepanjang rute ini. Harap berhati-hati!</div>';
+                if (warningIcon) {
+                    warningIcon.className = 'fas fa-exclamation-circle';
+                    warningIcon.style.color = '#ff4a4a';
+                }
+                if (warningTitle) {
+                    warningTitle.innerText = 'Rute Kritis: Tanpa SPKLU';
+                    warningTitle.style.color = '#ff4a4a';
+                }
+            } else {
+                // Gap battery warnings in the sidebar Analysis box
+                const gapWarnings = [];
+                const warningThresholdKm = 50;
+                
+                if (enableBatterySim) {
+                    // Let's generate warnings if any charging stop is required or if battery is depleted
+                    timelineItems.forEach((item, index) => {
+                        if (item.type === 'spklu' && item.chargeAction) {
+                            gapWarnings.push({
+                                type: 'charge',
+                                name: item.name,
+                                pct: item.arrivalPct,
+                                range: item.arrivalRange.toFixed(1)
+                            });
+                        } else if (item.type === 'end' && item.arrivalRange < bufferRange) {
+                            gapWarnings.push({
+                                type: 'depleted',
+                                name: item.name,
+                                pct: item.arrivalPct,
+                                range: item.arrivalRange.toFixed(1)
+                            });
+                        }
+                    });
+                } else {
+                    // Standard distance-based gap warnings
+                    const firstSPKLU = spkluAlongRoute[0];
+                    const firstDist = getRouteSegmentDistance(currentRouteLatLngs, 0, firstSPKLU.routeIndex);
+                    if (firstDist > warningThresholdKm) {
+                        gapWarnings.push({
+                            type: 'start_dist',
+                            distance: firstDist,
+                            toName: firstSPKLU.feature.properties.name
+                        });
+                    }
+                    
+                    for (let i = 0; i < spkluAlongRoute.length - 1; i++) {
+                        const itemA = spkluAlongRoute[i];
+                        const itemB = spkluAlongRoute[i+1];
+                        const gapDist = getRouteSegmentDistance(currentRouteLatLngs, itemA.routeIndex, itemB.routeIndex);
+                        if (gapDist > warningThresholdKm) {
+                            gapWarnings.push({
+                                type: 'gap_dist',
+                                distance: gapDist,
+                                fromName: itemA.feature.properties.name,
+                                toName: itemB.feature.properties.name
+                            });
+                        }
+                    }
+                    
+                    const lastSPKLU = spkluAlongRoute[spkluAlongRoute.length - 1];
+                    const lastDist = getRouteSegmentDistance(currentRouteLatLngs, lastSPKLU.routeIndex, currentRouteLatLngs.length - 1);
+                    if (lastDist > warningThresholdKm) {
+                        gapWarnings.push({
+                            type: 'end_dist',
+                            distance: lastDist,
+                            fromName: lastSPKLU.feature.properties.name
+                        });
+                    }
+                }
+
+                // Render Warning Box if any warning is found, otherwise safe box
+                if (gapWarnings.length > 0) {
+                    if (warningIcon) {
+                        warningIcon.className = 'fas fa-exclamation-triangle';
+                        warningIcon.style.color = '#ff6b6b';
+                    }
+                    if (warningTitle) {
+                        warningTitle.innerText = enableBatterySim ? 'Perencanaan Daya Kritis!' : 'Celah Baterai Kritis!';
+                        warningTitle.style.color = '#ff6b6b';
+                    }
+
+                    const warnDiv = document.createElement('div');
+                    warnDiv.className = 'route-warnings-box';
+                    warnDiv.style.cssText = 'background: rgba(255, 74, 74, 0.08); border: 1px solid rgba(255, 74, 74, 0.25); padding: 12px; border-radius: 12px; color: #ff8b8b;';
+                    
+                    let warningsList = '';
+                    gapWarnings.forEach(w => {
+                        if (enableBatterySim) {
+                            if (w.type === 'charge') {
+                                warningsList += `<li>Baterai menipis sisa <strong>${w.pct}%</strong> (${w.range} km). Direkomendasikan isi daya di <em>${w.name}</em> sebelum lanjut.</li>`;
+                            } else if (w.type === 'depleted') {
+                                if (parseFloat(w.range) <= 0) {
+                                    warningsList += `<li><strong>🚨 Kendaraan Mogok!</strong> Baterai habis sebelum mencapai tujuan <em>${w.name}</em>.</li>`;
+                                } else {
+                                    warningsList += `<li>Baterai tersisa sangat kritis <strong>${w.pct}%</strong> (${w.range} km) saat tiba di tujuan <em>${w.name}</em>.</li>`;
+                                }
+                            }
+                        } else {
+                            if (w.type === 'start_dist') {
+                                warningsList += `<li>Jarak ke SPKLU pertama cukup jauh (<strong>${w.distance.toFixed(1)} km</strong>) menuju <em>${w.toName}</em>.</li>`;
+                            } else if (w.type === 'gap_dist') {
+                                warningsList += `<li>Celah pengisian daya sepanjang <strong>${w.distance.toFixed(1)} km</strong> tanpa SPKLU antara <em>${w.fromName}</em> dan <em>${w.toName}</em>.</li>`;
+                            } else if (w.type === 'end_dist') {
+                                warningsList += `<li>Jarak sisa dari SPKLU terakhir <em>${w.fromName}</em> ke tujuan cukup jauh (<strong>${w.distance.toFixed(1)} km</strong>).</li>`;
+                            }
+                        }
+                    });
+
+                    warnDiv.innerHTML = `
+                        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: #ff6b6b;">
+                            <i class="fas fa-exclamation-triangle"></i> ${enableBatterySim ? 'Pengisian Daya Diperlukan' : 'Terdeteksi Area Kritis'}
+                        </h4>
+                        <ul style="margin: 0; padding-left: 18px; font-size: 11px; line-height: 1.5; display: flex; flex-direction: column; gap: 4px;">
+                            ${warningsList}
+                        </ul>
+                        <div style="font-size: 10px; margin-top: 8px; opacity: 0.85; font-style: italic; border-top: 1px solid rgba(255, 74, 74, 0.15); padding-top: 6px;">
+                            Saran: ${enableBatterySim ? 'Rencana di atas telah disesuaikan dengan kapasitas kendaraan Anda.' : 'Harap isi baterai kendaraan minimal 80% sebelum melintasi area celah kritis ini.'}
+                        </div>
+                    `;
+                    routeSpkluListContainer.appendChild(warnDiv);
+                } else {
+                    if (warningIcon) {
+                        warningIcon.className = 'fas fa-check-circle';
+                        warningIcon.style.color = 'var(--accent-green)';
+                    }
+                    if (warningTitle) {
+                        warningTitle.innerText = enableBatterySim ? 'Daya Baterai Aman' : 'Celah Baterai Aman';
+                        warningTitle.style.color = 'var(--accent-green)';
+                    }
+
+                    routeSpkluListContainer.innerHTML = `
+                        <div style="background: rgba(0, 255, 135, 0.08); border: 1px solid rgba(0, 255, 135, 0.25); padding: 12px; border-radius: 12px; color: #a3ffcb; font-size: 12.5px;">
+                            <h4 style="font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; color: var(--accent-green);">
+                                <i class="fas fa-check-circle"></i> ${enableBatterySim ? 'Baterai Cukup' : 'Tidak Ada Celah Kritis'}
+                            </h4>
+                            ${enableBatterySim ? 'Kondisi baterai aman sampai ke tujuan tanpa wajib berhenti mengisi daya.' : 'Celah pengisian daya sepanjang rute aman (&lt; 50 km).'} Estimasi tersedia <strong>${spkluAlongRoute.length} SPKLU</strong> di rute ini.
+                        </div>
+                    `;
+                }
+            }
+
+            // Render cards and connectors to bottom sheet timeline
+            if (sheetTimelineContainer) {
+                timelineItems.forEach((item, index) => {
+                    if (item.type === 'start' || item.type === 'end') {
+                        const card = document.createElement('div');
+                        card.className = 'timeline-card special-card';
+                        const cardColor = item.type === 'start' ? 'var(--accent-green)' : '#ff4a4a';
+                        card.style.cssText = `
+                            width: 140px;
+                            flex-shrink: 0;
+                            background: rgba(255, 255, 255, 0.02);
+                            border: 1px solid ${cardColor};
+                            border-radius: 12px;
+                            padding: 8px 10px;
+                            cursor: pointer;
+                            transition: all 0.25s ease;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            height: 100%;
+                            box-sizing: border-box;
+                        `;
+                        
+                        let subLabel = item.type === 'start' ? 'Awal Perjalanan' : 'Akhir Perjalanan';
+                        if (enableBatterySim) {
+                            if (item.type === 'start') {
+                                subLabel = `Bat Mulai: ${item.arrivalPct}%`;
+                            } else {
+                                subLabel = item.arrivalRange <= 0 ? '🚨 Habis!' : `Tiba: ${item.arrivalPct}%`;
+                            }
+                        }
+
+                        card.innerHTML = `
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; color: ${cardColor}; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <i class="fas ${item.type === 'start' ? 'fa-play' : 'fa-flag-checkered'}"></i> ${item.name}
+                            </div>
+                            <div style="font-size: 9px; color: ${enableBatterySim && item.type === 'end' ? item.recommendationColor : 'var(--text-gray)'}; text-align: center; margin-top: 4px; font-weight: 600;">
+                                ${subLabel}
+                            </div>
+                        `;
+                        card.addEventListener('click', () => {
+                            map.setView(item.latlng, 15);
+                        });
+                        sheetTimelineContainer.appendChild(card);
+                    } else {
+                        const isVeryClose = item.distance <= 1.5;
+                        const dotColor = isVeryClose ? '#00ff87' : '#ffa500';
+                        const sheetAccessLabel = isVeryClose ? 'Akses Cepat' : 'Perlu Memutar';
+
+                        const card = document.createElement('div');
+                        card.className = 'timeline-card';
+                        card.style.cssText = `
+                            width: 170px;
+                            flex-shrink: 0;
+                            background: rgba(255, 255, 255, 0.04);
+                            border: 1px solid var(--border-glass);
+                            border-radius: 12px;
+                            padding: 8px 10px;
+                            cursor: pointer;
+                            transition: all 0.25s ease;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                            height: 100%;
+                            box-sizing: border-box;
+                        `;
+
+                        if (enableBatterySim) {
+                            card.innerHTML = `
+                                <div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; color: #fff; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="${item.name}">${item.name}</div>
+                                        <div style="font-size: 9px; color: ${dotColor}; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                                            <span style="width: 4px; height: 4px; border-radius: 50%; background: ${dotColor}; display: inline-block;"></span>
+                                            ${sheetAccessLabel} (${item.distance.toFixed(1)} km)
+                                        </div>
+                                    </div>
+                                    <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; margin-top: 4px; display: flex; flex-direction: column; gap: 1px; font-size: 9px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="color: var(--text-gray);">Baterai Tiba:</span>
+                                            <span style="color: ${item.arrivalRange < bufferRange ? '#ff6b6b' : '#a3ffcb'}; font-weight: 600;">${item.arrivalPct}%</span>
+                                        </div>
+                                        <div style="font-weight: 700; color: ${item.recommendationColor}; text-align: center; margin-top: 2px; font-size: 9.5px;">
+                                            ${item.recommendation}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            const distFromStart = getRouteSegmentDistance(currentRouteLatLngs, 0, item.routeIndex);
+                            card.innerHTML = `
+                                <div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; color: #fff; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="${item.name}">${item.name}</div>
+                                        <div style="font-size: 9px; color: ${dotColor}; display: flex; align-items: center; gap: 4px; margin-top: 2px; font-weight: 500;">
+                                            <span style="width: 5px; height: 5px; border-radius: 50%; background: ${dotColor}; display: inline-block;"></span>
+                                            ${sheetAccessLabel} (${item.distance.toFixed(1)} km)
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 4px; font-size: 9px; color: var(--text-gray); display: flex; flex-direction: column; gap: 1px;">
+                                        <span>KM ${distFromStart.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        card.addEventListener('mouseover', () => {
+                            card.style.background = 'rgba(0, 255, 135, 0.06)';
+                            card.style.borderColor = 'var(--accent-green)';
+                        });
+                        card.addEventListener('mouseout', () => {
+                            card.style.background = 'rgba(255, 255, 255, 0.04)';
+                            card.style.borderColor = 'var(--border-glass)';
+                        });
+
+                        card.addEventListener('click', () => {
+                            map.setView(item.latlng, 15);
+                            routeSPKLULayerGroup.eachLayer(layer => {
+                                if (layer.getLatLng && layer.getLatLng().lat === item.latlng[0] && layer.getLatLng().lng === item.latlng[1]) {
+                                    layer.openPopup();
+                                }
+                            });
+                        });
+
+                        sheetTimelineContainer.appendChild(card);
+                    }
+
+                    // Add connector to the next item
+                    if (index < timelineItems.length - 1) {
+                        const nextItem = timelineItems[index + 1];
+                        const gapDist = getRouteSegmentDistance(currentRouteLatLngs, item.routeIndex, nextItem.routeIndex);
+
+                        let connectorClass = 'connector-gray';
+                        let prefix = '';
+                        if (gapDist > 50) {
+                            connectorClass = 'connector-red';
+                            prefix = '⚠️ ';
+                        } else if (gapDist >= 30) {
+                            connectorClass = 'connector-yellow';
+                            prefix = '⚡ ';
+                        }
+
+                        const connector = document.createElement('div');
+                        connector.className = `timeline-connector ${connectorClass}`;
+                        connector.innerHTML = `<span>${prefix}${gapDist.toFixed(1)} km</span>`;
+                        sheetTimelineContainer.appendChild(connector);
+                    }
+                });
+            }
+
+            // Draw color-coded route segments on the map
+            if (routeSegmentsLayerGroup) {
+                routeSegmentsLayerGroup.clearLayers();
+                
+                for (let i = 0; i < timelineItems.length - 1; i++) {
+                    const itemA = timelineItems[i];
+                    const itemB = timelineItems[i + 1];
+                    
+                    let segmentCoords = currentRouteLatLngs.slice(itemA.routeIndex, itemB.routeIndex + 1);
+                    if (segmentCoords.length < 2) {
+                        segmentCoords = [itemA.latlng, itemB.latlng];
+                    }
+                    
+                    const gapDist = getRouteSegmentDistance(currentRouteLatLngs, itemA.routeIndex, itemB.routeIndex);
+                    
+                    let color = '#8a99ad'; // Safe Gray (< 30km)
+                    let shadowOpacity = 0.15;
+                    if (gapDist > 50) {
+                        color = '#ff4a4a'; // Red (> 50km)
+                        shadowOpacity = 0.3;
+                    } else if (gapDist >= 30) {
+                        color = '#ffd700'; // Yellow (30 - 50km)
+                        shadowOpacity = 0.25;
+                    }
+                    
+                    // Draw outer glowing line (shadow effect)
+                    L.polyline(segmentCoords, {
+                        color: color,
+                        opacity: shadowOpacity,
+                        weight: 10,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(routeSegmentsLayerGroup);
+                    
+                    // Draw inner main line
+                    L.polyline(segmentCoords, {
+                        color: color,
+                        opacity: 0.9,
+                        weight: 4,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(routeSegmentsLayerGroup);
+                }
+            }
+            
+            // Re-render markers with route-aware accessibility colors (Green for quick access, Orange for detour required)
+            if (onlyRouteSpklu) {
+                map.removeLayer(markerCluster);
+                map.addLayer(routeSPKLULayerGroup);
+                routeSPKLULayerGroup.clearLayers();
+                
+                spkluAlongRoute.forEach(item => {
+                    const props = item.feature.properties;
+                    const isVeryClose = item.distance <= 1.5;
+                    const dotClass = isVeryClose ? 'dot-green' : 'dot-orange';
+                    
+                    const customIcon = L.divIcon({
+                        className: 'custom-spklu-marker',
+                        html: `<div class="charger-dot ${dotClass}"></div>`,
+                        iconSize: [14, 14],
+                        iconAnchor: [7, 7],
+                        popupAnchor: [0, -10]
+                    });
+                    
+                    // Use spkluNameStore[gid] — safe for names with quotes/special chars
+                    const popupContent = `
+                        <div class="popup-card">
+                            <span class="popup-tag" style="background: ${isVeryClose ? 'rgba(0, 255, 135, 0.15)' : 'rgba(255, 159, 0, 0.15)'}; border-color: ${isVeryClose ? 'rgba(0, 255, 135, 0.3)' : 'rgba(255, 159, 0, 0.3)'}; color: ${isVeryClose ? 'var(--accent-green)' : '#ff9f00'}; font-weight: 600;">
+                                ${isVeryClose ? 'Akses Cepat (< 1.5km)' : 'Perlu Memutar (> 1.5km)'}
+                            </span>
+                            <h3 class="popup-title">${props.name}</h3>
+                            <p class="popup-address"><i class="fas fa-map-marker-alt"></i> ${props.address}</p>
+                            <div class="popup-details">
+                                <div class="popup-detail-item">
+                                    <i class="fas fa-arrows-left-right"></i>
+                                    <span><strong>Jarak dari Jalur Rute:</strong> ${item.distance.toFixed(2)} km</span>
+                                </div>
+                                <div class="popup-detail-item">
+                                    <i class="fas fa-city"></i>
+                                    <span><strong>Kota/Kab:</strong> ${props.city || '-'}</span>
+                                </div>
+                                <div class="popup-detail-item">
+                                    <i class="fas fa-compass"></i>
+                                    <span><strong>Koordinat:</strong> ${item.latlng[0].toFixed(5)}, ${item.latlng[1].toFixed(5)}</span>
+                                </div>
+                            </div>
+                            <div class="route-buttons-container">
+                                <button class="route-popup-btn btn-start" onclick="setRouteEndpoint('start', ${item.latlng[0]}, ${item.latlng[1]}, spkluNameStore[${props.gid}])">
+                                    <i class="fas fa-play"></i> Mulai Rute
+                                </button>
+                                <button class="route-popup-btn btn-end" onclick="setRouteEndpoint('end', ${item.latlng[0]}, ${item.latlng[1]}, spkluNameStore[${props.gid}])">
+                                    <i class="fas fa-flag-checkered"></i> Akhiri Rute
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const routeMarker = L.marker(item.latlng, { icon: customIcon });
+                    routeMarker.bindPopup(popupContent);
+                    
+                    routeMarker.on('click', () => {
+                        map.setView(item.latlng, 15);
+                    });
+                    
+                    routeSPKLULayerGroup.addLayer(routeMarker);
+                });
+            } else {
+                map.removeLayer(routeSPKLULayerGroup);
+                map.addLayer(markerCluster);
+                
+                markerCluster.clearLayers();
+                allFeatures.forEach(feature => {
+                    const marker = mapMarkers[feature.properties.gid];
+                    if (marker) markerCluster.addLayer(marker);
+                });
+            }
+        }
+
+        // DOM Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            loadData();
+
+            document.getElementById('search-input').addEventListener('input', filterLocations);
+            document.getElementById('province-filter').addEventListener('change', filterLocations);
+            document.getElementById('provider-filter').addEventListener('change', filterLocations);
+
+            // Layer Visibility Toggles
+            document.getElementById('toggle-spklu-layer').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    map.addLayer(markerCluster);
+                } else {
+                    map.removeLayer(markerCluster);
+                }
+            });
+
+            document.getElementById('toggle-road-layer').addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    map.addLayer(roadLayerGroup);
+                    loadRoadNetwork();
+                } else {
+                    map.removeLayer(roadLayerGroup);
+                }
+            });
+
+            // Tab triggers
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchTab(btn.getAttribute('data-target'));
+                });
+            });
+
+            // Route search listeners
+            document.getElementById('btn-pick-start').addEventListener('click', () => setPickingMode('start'));
+            document.getElementById('btn-gps-start').addEventListener('click', getUserLocation);
+            document.getElementById('btn-pick-end').addEventListener('click', () => setPickingMode('end'));
+            document.getElementById('btn-calculate-route').addEventListener('click', calculateRoute);
+            document.getElementById('btn-clear-route').addEventListener('click', clearRoute);
+            document.getElementById('chk-only-route-spklu').addEventListener('change', filterSPKLUAlongRoute);
+            
+            document.getElementById('chk-enable-battery-sim').addEventListener('change', (e) => {
+                const simPanel = document.getElementById('battery-simulator-panel');
+                if (simPanel) {
+                    simPanel.style.display = e.target.checked ? 'block' : 'none';
+                }
+                filterSPKLUAlongRoute();
+            });
+            
+            document.getElementById('range-max-battery').addEventListener('input', (e) => {
+                document.getElementById('lbl-max-range').innerText = e.target.value + ' km';
+                filterSPKLUAlongRoute();
+            });
+            document.getElementById('range-start-battery').addEventListener('input', (e) => {
+                document.getElementById('lbl-start-battery').innerText = e.target.value + '%';
+                filterSPKLUAlongRoute();
+            });
+            document.getElementById('range-buffer-battery').addEventListener('input', (e) => {
+                document.getElementById('lbl-buffer-battery').innerText = e.target.value + ' km';
+                filterSPKLUAlongRoute();
+            });
+
+            // Horizontal mouse wheel scroll for bottom sheet timeline
+            const timelineList = document.getElementById('sheet-timeline-list');
+            if (timelineList) {
+                timelineList.addEventListener('wheel', (e) => {
+                    if (e.deltaY !== 0) {
+                        e.preventDefault();
+                        timelineList.scrollLeft += e.deltaY;
+                    }
+                }, { passive: false });
+            }
+
+            // Toggle Sidebar Collapse Event
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebar-toggle');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            toggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                if (sidebar.classList.contains('collapsed')) {
+                    toggleIcon.className = 'fas fa-chevron-right';
+                } else {
+                    toggleIcon.className = 'fas fa-chevron-left';
+                }
+                // Invalidate Map size after CSS slide animation ends (300ms)
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 300);
+            });
+
+            // Toggle Bottom Sheet Collapse Event
+            const toggleSheetBtn = document.getElementById('btn-toggle-sheet');
+            const showTimelineBtn = document.getElementById('btn-show-timeline');
+            const sheet = document.getElementById('route-bottom-sheet');
+            const mapLegend = document.getElementById('map-legend');
+            
+            toggleSheetBtn.addEventListener('click', () => {
+                sheet.classList.add('collapsed-sheet');
+                if (mapLegend) mapLegend.classList.remove('shifted-legend');
+                if (showTimelineBtn) showTimelineBtn.style.display = 'flex';
+            });
+
+            if (showTimelineBtn) {
+                showTimelineBtn.addEventListener('click', () => {
+                    sheet.classList.remove('collapsed-sheet');
+                    if (mapLegend) mapLegend.classList.add('shifted-legend');
+                    showTimelineBtn.style.display = 'none';
+                });
+            }
+
+            // Modal About Project Events
+            const aboutBtn = document.getElementById('about-project-btn');
+            const aboutModal = document.getElementById('about-modal');
+            const closeAboutBtn = document.getElementById('close-about-btn');
+            const closeAboutBtnFooter = document.getElementById('close-about-btn-footer');
+            
+            if (aboutBtn && aboutModal) {
+                aboutBtn.addEventListener('click', () => {
+                    aboutModal.style.display = 'flex';
+                });
+                
+                const closeModal = () => {
+                    aboutModal.style.display = 'none';
+                };
+                
+                if (closeAboutBtn) closeAboutBtn.addEventListener('click', closeModal);
+                if (closeAboutBtnFooter) closeAboutBtnFooter.addEventListener('click', closeModal);
+                
+                aboutModal.addEventListener('click', (e) => {
+                    if (e.target === aboutModal) {
+                        closeModal();
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Modal About Project (Portfolio Credit & Features info) -->
+    <div id="about-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5, 8, 16, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; transition: all 0.3s ease;">
+        <div class="modal-card" style="background: linear-gradient(135deg, rgba(20, 30, 55, 0.95) 0%, rgba(10, 15, 30, 0.98) 100%); border: 1px solid var(--border-glass); border-radius: 16px; width: 90%; max-width: 680px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+            <!-- Modal Header -->
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-project-diagram" style="color: var(--accent-cyan); font-size: 20px;"></i>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-light); margin: 0;">Tentang Proyek & Portofolio</h3>
+                </div>
+                <button id="close-about-btn" style="background: transparent; border: none; color: var(--text-gray); font-size: 20px; cursor: pointer; transition: color 0.3s ease;"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Modal Body (Scrollable) -->
+            <div style="padding: 24px; overflow-y: auto; flex: 1; font-size: 14px; line-height: 1.6; color: rgba(243, 244, 246, 0.9);">
+                <!-- Author Info -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-glass);">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan)); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0c0f1d; font-size: 20px; font-weight: 800; font-family: 'Outfit', sans-serif; box-shadow: 0 0 15px rgba(0, 255, 135, 0.3);">
+                            RN
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 16px; color: var(--text-light); font-family: 'Outfit', sans-serif;">Ripan Nursalam</div>
+                            <div style="font-size: 12px; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Pencipta & Pengembang Proyek</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="https://www.linkedin.com/in/ripan-nursalam/" target="_blank" title="LinkedIn Profile" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); color: #0077b5; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none; font-size: 16px;">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://github.com/Ascalon231" target="_blank" title="GitHub Profile" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); color: var(--text-light); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; text-decoration: none; font-size: 16px;">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <p style="margin-bottom: 20px;">
+                    <strong>Cas.in (Charging Indonesia)</strong> adalah aplikasi <strong>WebGIS Portofolio Kasus Nyata (Real-Case Portfolio Project)</strong> yang dirancang untuk memetakan, memvisualisasikan, dan menganalisis sebaran Stasiun Pengisian Kendaraan Listrik Umum (SPKLU) di seluruh Indonesia. Proyek ini mengintegrasikan pemrosesan data spasial dengan antarmuka peta interaktif modern.
+                </p>
+
+                <!-- Alur Data Spasial (Visual Diagram) -->
+                <h4 style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-light); margin-bottom: 16px; border-left: 3px solid var(--accent-cyan); padding-left: 8px;">Arsitektur &amp; Integrasi Alur Data Spasial</h4>
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; position: relative; padding-left: 10px;">
+                    <!-- Line connector for vertical layout -->
+                    <div style="position: absolute; left: 33px; top: 20px; bottom: 20px; width: 2px; background: linear-gradient(180deg, var(--accent-cyan) 0%, var(--accent-green) 33%, #a855f7 66%, #ffd700 100%); z-index: 1;"></div>
+                    
+                    <!-- Step 1: SHP/GeoJSON -->
+                    <div style="display: flex; gap: 16px; position: relative; z-index: 2;">
+                        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(12, 15, 29, 0.95); border: 2px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 12px rgba(96, 239, 255, 0.2);">
+                            <i class="fas fa-file-contract" style="color: var(--accent-cyan); font-size: 18px;"></i>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px 14px; flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-weight: 700; color: var(--text-light); font-family: 'Outfit', sans-serif; font-size: 13px;">1. SHP / GeoJSON (Data Spasial Mentah)</span>
+                                <span style="font-size: 9px; background: rgba(96, 239, 255, 0.1); color: var(--accent-cyan); padding: 1px 5px; border-radius: 4px; font-weight: 600; text-transform: uppercase;">Raw Data</span>
+                            </div>
+                            <p style="font-size: 11.5px; color: var(--text-gray); margin: 0; line-height: 1.45;">
+                                Data spasial SPKLU dari <strong>GIS Hub Kemenhub</strong> dan batas administratif BPS diolah serta disinkronkan ke format standar spasial WGS 84 (EPSG:4326).
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: PostGIS (Supabase) -->
+                    <div style="display: flex; gap: 16px; position: relative; z-index: 2;">
+                        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(12, 15, 29, 0.95); border: 2px solid var(--accent-green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 12px rgba(0, 255, 135, 0.2);">
+                            <i class="fas fa-database" style="color: var(--accent-green); font-size: 18px;"></i>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px 14px; flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-weight: 700; color: var(--text-light); font-family: 'Outfit', sans-serif; font-size: 13px;">2. Supabase + PostGIS (Spatial Database)</span>
+                                <span style="font-size: 9px; background: rgba(0, 255, 135, 0.1); color: var(--accent-green); padding: 1px 5px; border-radius: 4px; font-weight: 600; text-transform: uppercase;">DB &amp; GIS Engine</span>
+                            </div>
+                            <p style="font-size: 11.5px; color: var(--text-gray); margin: 0; line-height: 1.45;">
+                                Tempat penyimpanan tabel spasial `sebaran_spklu` dengan spatial index (GIST). Menjalankan kueri SQL spasial, deterministik <strong>Coordinate Jittering</strong> untuk koordinat bertumpuk, serta spatial intersect wilayah.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Flask API -->
+                    <div style="display: flex; gap: 16px; position: relative; z-index: 2;">
+                        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(12, 15, 29, 0.95); border: 2px solid #a855f7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);">
+                            <i class="fab fa-python" style="color: #c084fc; font-size: 18px;"></i>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px 14px; flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-weight: 700; color: var(--text-light); font-family: 'Outfit', sans-serif; font-size: 13px;">3. Flask RESTful API (Python Backend)</span>
+                                <span style="font-size: 9px; background: rgba(168, 85, 247, 0.1); color: #c084fc; padding: 1px 5px; border-radius: 4px; font-weight: 600; text-transform: uppercase;">API Backend</span>
+                            </div>
+                            <p style="font-size: 11.5px; color: var(--text-gray); margin: 0; line-height: 1.45;">
+                                Menyediakan API endpoints aman (`/api/spklu`, `/api/stats`, `/health`), mengintegrasikan mesin perutean jalan (OSRM API), serta menangani keamanan API rate-limiting menggunakan <strong>Flask-Limiter</strong>.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Leaflet Client -->
+                    <div style="display: flex; gap: 16px; position: relative; z-index: 2;">
+                        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(12, 15, 29, 0.95); border: 2px solid #ffd700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);">
+                            <i class="fas fa-map-marked-alt" style="color: #ffd700; font-size: 18px;"></i>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px 14px; flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-weight: 700; color: var(--text-light); font-family: 'Outfit', sans-serif; font-size: 13px;">4. Leaflet.js Client (Interactive WebGIS UI)</span>
+                                <span style="font-size: 9px; background: rgba(255, 215, 0, 0.1); color: #ffd700; padding: 1px 5px; border-radius: 4px; font-weight: 600; text-transform: uppercase;">Frontend UI</span>
+                            </div>
+                            <p style="font-size: 11.5px; color: var(--text-gray); margin: 0; line-height: 1.45;">
+                                Visualisasi peta spasial interaktif bagi pengguna, marker clustering, buffer spasial 5km di sepanjang koridor rute, pencarian taksonomi terintegrasi, dan dashboard analitik grafis via Chart.js.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Grid -->
+                <h4 style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-light); margin-bottom: 12px; border-left: 3px solid var(--accent-green); padding-left: 8px;">Fitur Teknik Rekayasa &amp; GIS</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); padding: 12px 14px; border-radius: 8px;">
+                        <div style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-globe-asia"></i> PostgreSQL + PostGIS</div>
+                        <span style="font-size: 12px; color: var(--text-gray);">Kueri spasial real-time berbasis serverless database Supabase (PostGIS cloud).</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); padding: 12px 14px; border-radius: 8px;">
+                        <div style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-compress-alt"></i> Jittering Spasial Otomatis</div>
+                        <span style="font-size: 12px; color: var(--text-gray);">Mengurai titik koordinat tumpang-tindih secara otomatis di level database (SQL Window function).</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); padding: 12px 14px; border-radius: 8px;">
+                        <div style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-route"></i> Perutean Sepanjang Jalan</div>
+                        <span style="font-size: 12px; color: var(--text-gray);">Pencarian SPKLU dalam radius koridor jalan nasional menggunakan buffer spasial 5km.</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); padding: 12px 14px; border-radius: 8px;">
+                        <div style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-shield-alt"></i> Keamanan API &amp; Rate Limit</div>
+                        <span style="font-size: 12px; color: var(--text-gray);">Mengamankan backend Flask dari penyalahgunaan menggunakan Flask-Limiter &amp; monitoring /health.</span>
+                    </div>
+                </div>
+
+                <!-- Prototype Disclaimer & Collaboration Info -->
+                <div style="background: rgba(96, 239, 255, 0.04); border: 1px solid rgba(96, 239, 255, 0.15); border-radius: 10px; padding: 16px; margin-bottom: 24px; font-size: 13px;">
+                    <div style="font-weight: 700; color: var(--accent-cyan); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-lightbulb"></i> Status Prototype &amp; Kerja Sama Penerapan GIS
+                    </div>
+                    <p style="margin-bottom: 10px; color: var(--text-gray); line-height: 1.5; font-size: 12.5px;">
+                        Proyek ini dikembangkan sebagai <strong>prototype portofolio aktif</strong> yang berjalan pada infrastruktur <em>free tier</em> (terbatas oleh limitasi database gratis Supabase, kuota API OSRM publik, rate limit server, dll.). Oleh karena itu, platform ini memiliki <strong>potensi besar untuk dideploy dan dikembangkan sepenuhnya</strong> bagi penggunaan publik skala besar maupun komersial industri EV.
+                    </p>
+                    <p style="color: var(--text-light); margin-bottom: 12px; line-height: 1.5; font-size: 12.5px;">
+                        Saya sangat terbuka untuk berkolaborasi, menerima masukan, maupun berdiskusi terkait <strong>penerapan sistem informasi geografis (GIS) pada proyek-proyek lainnya, pemetaan interaktif berbasis web, serta analisis spasial/pemrosesan data spasial (spatial data science)</strong>. Silakan hubungi saya melalui profil LinkedIn atau GitHub saya di bagian atas!
+                    </p>
+                </div>
+
+                <!-- Contributors & Rights -->
+                <h4 style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-light); margin-bottom: 12px; border-left: 3px solid var(--accent-green); padding-left: 8px;">Lisensi &amp; Data Attribution</h4>
+                <ul style="list-style-type: none; padding-left: 0; font-size: 12.5px; color: var(--text-gray); display: flex; flex-direction: column; gap: 8px;">
+                    <li style="display: flex; align-items: start; gap: 8px;"><i class="fas fa-code-branch" style="color: var(--accent-green); margin-top: 3px;"></i> <span><strong>Lisensi Kode:</strong> Dilisensikan di bawah <a href="https://opensource.org/licenses/MIT" target="_blank" style="color: var(--accent-green); text-decoration: underline;">Lisensi MIT</a> (Terbuka dan Bebas untuk Pengembangan Portofolio).</span></li>
+                    <li style="display: flex; align-items: start; gap: 8px;"><i class="fas fa-database" style="color: var(--accent-green); margin-top: 3px;"></i> <span><strong>Sumber Data Spasial:</strong> Badan Informasi Geospasial (BIG), Badan Pusat Statistik (BPS), dan <strong>GIS Hub Kemenhub</strong> (Data Jaringan Jalan Nasional &amp; Prasarana Transportasi Darat).</span></li>
+                    <li style="display: flex; align-items: start; gap: 8px;"><i class="fas fa-map-marked" style="color: var(--accent-green); margin-top: 3px;"></i> <span><strong>Data Peta &amp; Geocoding:</strong> Kontributor OpenStreetMap. Lisensi data geospasial OSM menggunakan **ODbL (Open Database License v1.0)** dan visualisasi tile peta mematuhi hak cipta **© OpenStreetMap contributors**. Lisensi penggunaan ini sudah tepat dan sesuai standar hukum distribusi data geografis terbuka internasional.</span></li>
+                </ul>
+            </div>
+            <!-- Modal Footer -->
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border-glass); background: rgba(255,255,255,0.02); display: flex; justify-content: flex-end;">
+                <button id="close-about-btn-footer" style="padding: 8px 16px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); color: var(--text-light); border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s ease;">Tutup</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

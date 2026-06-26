@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS sebaran_spklu (
 -- Indeks GIST sangat krusial untuk mempercepat kueri spasial (seperti ST_Contains, ST_Distance, ST_DWithin)
 CREATE INDEX IF NOT EXISTS idx_sebaran_spklu_geom ON sebaran_spklu USING gist(geom);
 
+-- Index spatial untuk jalan_nasional (diperlukan untuk KNN <-> query pada endpoint distance-stats)
+CREATE INDEX IF NOT EXISTS idx_jalan_nasional_geom ON jalan_nasional USING gist(geom);
+
 -- ---------------------------------------------------------------------
 -- 3. Pembersihan & Standardisasi Wilayah Spasial (Spatial Point-in-Polygon Join)
 -- ---------------------------------------------------------------------

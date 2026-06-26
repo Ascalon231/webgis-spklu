@@ -12,431 +12,505 @@
     <meta name="robots" content="index, follow">
     
     <!-- Google Fonts & FontAwesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script>window.Chart||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"><\/script>')</script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>window.L || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"><\/script>')</script>
+    <!-- Leaflet.heat plugin -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script>window.L.heatLayer || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"><\/script>')</script>
+    
     <style>
         :root {
-            --bg-dark: #0c0f1d;
-            --bg-card: rgba(30, 41, 73, 0.45);
-            --bg-input: rgba(18, 25, 47, 0.8);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-light: #f3f4f6;
-            --text-muted: #9ca3af;
+            --bg-dark: #070b14;
+            --bg-card: rgba(14, 20, 38, 0.85);
             --accent-green: #00ff87;
             --accent-cyan: #60efff;
-            --accent-yellow: #ffd700;
+            --accent-gold: #ffd700;
+            --accent-red: #ff4a6a;
             --accent-purple: #a78bfa;
-            --font-main: 'Inter', sans-serif;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --text-light: #f0f2f5;
+            --text-muted: #8892a4;
+            --border-glass: rgba(255, 255, 255, 0.06);
+            --shadow-glow: rgba(0, 255, 135, 0.2);
+            --font-body: 'Inter', sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+            --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-dark);
             color: var(--text-light);
-            font-family: var(--font-main);
+            font-family: var(--font-body);
             min-height: 100vh;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(at 10% 10%, rgba(96, 239, 255, 0.05) 0px, transparent 50%),
-                radial-gradient(at 90% 90%, rgba(0, 255, 135, 0.05) 0px, transparent 50%);
+            background-image:
+                radial-gradient(ellipse at 15% 20%, rgba(96,239,255,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 85% 80%, rgba(0,255,135,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 50% 50%, rgba(10,15,40,0.3) 0%, transparent 100%);
         }
 
+        /* ===== HEADER ===== */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 40px;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(12, 15, 29, 0.8);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-title-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            padding: 12px 32px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(7,11,20,0.95);
+            position: sticky; top: 0; z-index: 1000;
         }
 
         .header-logo {
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-            color: var(--bg-dark);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 0 15px rgba(96, 239, 255, 0.4);
+            background: rgba(255,255,255,0.06);
+            color: var(--accent-cyan); width: 38px; height: 38px; border-radius: 10px;
+            border: 1px solid var(--border-glass);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
         }
+
+        .header-title-container { display: flex; align-items: center; gap: 12px; }
 
         .header-title-container h1 {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(to right, #ffffff, #d1d5db);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn-nav {
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: var(--transition);
-        }
-
-        .btn-nav-map {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
+            font-family: var(--font-heading); font-size: 18px; font-weight: 600;
             color: var(--text-light);
         }
+        .header-sub { font-size: 11px; color: var(--text-muted); }
 
-        .btn-nav-map:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+        .nav-links { display: flex; gap: 10px; align-items: center; }
+        .gtranslate_wrapper { display: inline-flex; align-items: center; }
+        .gtranslate_wrapper select {
+            background: rgba(10,15,30,0.85); border: 1px solid var(--border-glass); border-radius: 8px;
+            color: var(--text-light); padding: 5px 12px 5px 32px; font-size: 12px; font-family: var(--font-body);
+            cursor: pointer; outline: none; width: auto; min-width: 100px; height: 36px;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2366aaff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='%238892a4'%3E%3Cpath d='M2 3l3 3 3-3'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat; background-position: 8px center, right 8px center;
+            background-size: 16px, 10px;
+        }
+        .gtranslate_wrapper select:hover { border-color: rgba(102,170,255,0.3); }
+
+        /* ===== BUTTONS ===== */
+        .btn-glass {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-glass);
+            color: var(--text-light);
+            font-family: var(--font-heading); font-size: 13px; font-weight: 600;
+            border-radius: 10px; padding: 9px 16px; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
+            transition: var(--transition); position: relative; overflow: hidden;
+        }
+        .btn-glass::before {
+            content:''; position:absolute; inset:0; opacity:0;
+            background: linear-gradient(135deg, rgba(96,239,255,0.08), rgba(0,255,135,0.04));
+            transition: var(--transition);
+        }
+        .btn-glass:hover::before { opacity:1; }
+        .btn-glass:hover {
+            border-color: rgba(96,239,255,0.25);
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 15px rgba(96,239,255,0.06);
         }
 
-        main {
-            max-width: 1600px;
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border: none; color: #050810;
+            font-family: var(--font-heading); font-size: 13px; font-weight: 700;
+            border-radius: 10px; padding: 9px 18px; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
+            transition: var(--transition);
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,255,135,0.35);
+        }
+
+        /* ===== MAP SECTION ===== */
+        .map-section {
+            width: 100%;
+            height: 50vh;
+            position: relative;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        #map {
+            width: 100%; height: 100%;
+            border: none;
+        }
+        #map .leaflet-control-zoom {
+            margin-top: 50px;
+        }
+        .map-toolbar {
+            position: absolute;
+            top: 16px; left: 16px;
+            display: flex; gap: 8px; flex-wrap: wrap;
+            z-index: 500;
+        }
+        .map-toolbar .btn-glass {
+            background: rgba(7,11,20,0.85);
+            backdrop-filter: blur(12px);
+            font-size: 12px; padding: 7px 12px;
+        }
+
+        /* ===== CONTENT ===== */
+        .content-wrapper {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 30px 40px;
+            padding: 32px 28px;
         }
+        .content-wrapper::-webkit-scrollbar { width: 4px; }
+        .content-wrapper::-webkit-scrollbar-track { background: transparent; }
+        .content-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
 
-        /* KPI Cards Grid */
+        /* ===== KPI CARDS ===== */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px; margin-bottom: 30px;
         }
 
         .kpi-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(8px);
+            background: linear-gradient(135deg, rgba(14,20,38,0.9), rgba(10,15,30,0.8));
+            border: 1px solid var(--border-glass);
+            border-radius: 18px; padding: 22px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            position: relative; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             transition: var(--transition);
         }
-
+        .kpi-card::before {
+            content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(135deg, rgba(96,239,255,0.03), transparent 50%);
+            pointer-events:none;
+        }
+        .kpi-card::after {
+            content:''; position:absolute; top:0; left:0; width:3px; height:100%;
+            background: linear-gradient(180deg, var(--accent-green), var(--accent-cyan));
+            border-radius: 0 2px 2px 0;
+        }
         .kpi-card:hover {
-            border-color: rgba(96, 239, 255, 0.2);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border-color: rgba(96,239,255,0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 20px rgba(96,239,255,0.05);
         }
 
         .kpi-info h3 {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
+            font-family: var(--font-heading); font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.2px;
+            color: var(--text-muted); margin-bottom: 6px;
         }
-
         .kpi-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #ffffff;
+            font-family: var(--font-heading); font-size: 26px; font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #c0c8d8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        .kpi-unit {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--text-muted);
-            margin-left: 5px;
-        }
-
+        .kpi-unit { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
         .kpi-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
+            width: 48px; height: 48px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+            position: relative; isolation: isolate;
+        }
+        .kpi-icon::before {
+            content:''; position:absolute; inset:0; border-radius:inherit;
+            opacity:0.15; z-index:-1;
         }
 
-        /* Dashboard Sections Grid */
+        /* ===== DASHBOARD BOXES ===== */
         .dashboard-row {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
-            gap: 25px;
-            margin-bottom: 30px;
+            gap: 22px; margin-bottom: 30px;
         }
-
-        @media (max-width: 1200px) {
-            .dashboard-row {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 1200px) { .dashboard-row { grid-template-columns: 1fr; } }
 
         .dashboard-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(8px);
+            background: linear-gradient(145deg, rgba(14,20,38,0.88), rgba(10,15,28,0.8));
+            border: 1px solid var(--border-glass);
+            border-radius: 18px; padding: 22px 24px;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            position: relative; overflow: hidden;
+        }
+        .dashboard-box::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:1px;
+            background: linear-gradient(90deg, transparent, rgba(96,239,255,0.15), transparent);
         }
 
         .box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-glass);
         }
-
         .box-title {
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: var(--font-heading); font-size: 15px; font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
         }
+        .box-title i { font-size: 16px; }
 
-        .box-actions {
-            display: flex;
-            gap: 10px;
-        }
+        .box-actions { display: flex; gap: 8px; align-items: center; }
 
-        .btn-action {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-light);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .btn-sm {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-glass);
+            color: var(--text-light); padding: 5px 12px; border-radius: 8px;
+            font-size: 12px; font-family: var(--font-heading); font-weight: 500;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
             transition: var(--transition);
         }
-
-        .btn-action:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.2);
+        .btn-sm:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(96,239,255,0.2);
         }
 
-        /* Charts Container inside dashboard box */
+        /* ===== CHARTS ===== */
         .charts-flex {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
-            gap: 20px;
+            gap: 16px;
         }
-
-        @media (max-width: 768px) {
-            .charts-flex {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 768px) { .charts-flex { grid-template-columns: 1fr; } }
 
         .chart-wrapper {
-            background: rgba(18, 25, 47, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 16px;
-            height: 320px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            background: rgba(10,15,30,0.5);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 14px; padding: 16px;
+            height: 320px; display: flex; flex-direction: column;
         }
-
         .chart-title-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            text-align: center;
+            font-size: 11px; font-family: var(--font-heading); font-weight: 500;
+            color: var(--text-muted); margin-bottom: 8px; text-align: center;
+            text-transform: uppercase; letter-spacing: 0.8px;
         }
+        .chart-container { position: relative; flex-grow: 1; width: 100%; }
 
-        .chart-container {
-            position: relative;
-            flex-grow: 1;
-            height: 100%;
-            width: 100%;
-        }
-
-        /* Tables styling */
-        .table-responsive {
-            overflow-x: auto;
-            width: 100%;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 13.5px;
-        }
-
+        /* ===== TABLES ===== */
+        .table-responsive { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th {
-            padding: 14px 16px;
-            background: rgba(18, 25, 47, 0.6);
+            padding: 11px 14px;
+            background: rgba(10,15,30,0.6);
             color: var(--text-muted);
-            font-weight: 500;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border-color);
+            font-family: var(--font-heading); font-weight: 500;
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+            border-bottom: 1px solid var(--border-glass);
         }
-
         td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 11px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
             color: var(--text-light);
         }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
+        tr:hover td { background: rgba(96,239,255,0.03); }
 
         .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
+            display: inline-block; padding: 2px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 600; font-family: var(--font-heading);
         }
+        .badge-cyan { background: rgba(96,239,255,0.1); color: var(--accent-cyan); border: 1px solid rgba(96,239,255,0.2); }
+        .badge-green { background: rgba(0,255,135,0.1); color: var(--accent-green); border: 1px solid rgba(0,255,135,0.2); }
+        .badge-purple { background: rgba(167,139,250,0.1); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.2); }
+        .badge-red { background: rgba(255,74,106,0.1); color: var(--accent-red); border: 1px solid rgba(255,74,106,0.2); }
+        .number-col { font-variant-numeric: tabular-nums; font-weight: 500; }
 
-        .badge-cyan { background: rgba(96, 239, 255, 0.1); color: var(--accent-cyan); border: 1px solid rgba(96, 239, 255, 0.2); }
-        .badge-green { background: rgba(0, 255, 135, 0.1); color: var(--accent-green); border: 1px solid rgba(0, 255, 135, 0.2); }
-        .badge-purple { background: rgba(167, 139, 250, 0.1); color: var(--accent-purple); border: 1px solid rgba(167, 139, 250, 0.2); }
-
-        .number-col {
-            font-variant-numeric: tabular-nums;
-            font-weight: 500;
-        }
-
-        /* Paginated Data Section */
-        .data-section {
-            margin-top: 30px;
-        }
-
-        .filters-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-item {
-            flex-grow: 1;
-            min-width: 200px;
-            position: relative;
-        }
-
+        /* ===== FILTERS & INPUTS ===== */
+        .data-section { margin-top: 30px; }
+        .filters-container { display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+        .filter-item { flex-grow: 1; min-width: 200px; position: relative; }
         .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 14px;
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 14px; pointer-events: none;
         }
-
         .input-control {
-            width: 100%;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 16px;
-            color: var(--text-light);
-            font-family: var(--font-main);
-            font-size: 14px;
-            outline: none;
+            width: 100%; background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-glass); border-radius: 10px;
+            padding: 11px 16px; color: var(--text-light);
+            font-family: var(--font-body); font-size: 14px; outline: none;
             transition: var(--transition);
         }
-
-        .input-control-search {
-            padding-left: 40px;
-        }
-
         .input-control:focus {
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 10px rgba(96, 239, 255, 0.15);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 15px rgba(96,239,255,0.1);
         }
+        .input-control-search { padding-left: 40px; }
+        select.input-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238892a4' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center;
+            padding-right: 36px; cursor: pointer;
+        }
+        select.input-control option { background: #070b14; color: var(--text-light); }
 
-        /* Pagination style */
+        /* ===== PAGINATION ===== */
         .pagination-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 18px; padding-top: 14px;
+            border-top: 1px solid var(--border-glass);
+            flex-wrap: wrap; gap: 12px;
         }
-
-        .pagination-info {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .pagination-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
+        .pagination-info { font-size: 13px; color: var(--text-muted); }
+        .pagination-buttons { display: flex; gap: 6px; }
         .btn-page {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-light);
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            cursor: pointer;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-glass); color: var(--text-light);
+            padding: 7px 13px; border-radius: 8px; font-size: 13px;
+            font-family: var(--font-heading); font-weight: 500; cursor: pointer;
             transition: var(--transition);
         }
-
         .btn-page:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(96,239,255,0.2);
         }
-
-        .btn-page:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
-
+        .btn-page:disabled { opacity: 0.35; cursor: not-allowed; }
         .btn-page.active {
             background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-            color: var(--bg-dark);
-            border-color: transparent;
-            font-weight: 600;
+            color: #050810; border-color: transparent; font-weight: 600;
         }
+
+        /* ===== METHOD & FOOTER ===== */
+        .method-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+        .method-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border-glass); color: var(--text-light);
+            padding: 7px 14px; border-radius: 8px; font-size: 12px;
+            font-family: var(--font-heading); font-weight: 500; cursor: pointer;
+            transition: var(--transition);
+        }
+        .method-btn:hover {
+            background: rgba(96,239,255,0.08);
+            border-color: rgba(96,239,255,0.3);
+        }
+        .method-detail-box {
+            background: rgba(96,239,255,0.04);
+            border: 1px solid rgba(96,239,255,0.12);
+            border-radius: 12px; padding: 16px; margin-top: 12px;
+        }
+        @media (max-width: 1024px) {
+            .map-section { height: 40vh; }
+            .gtranslate_wrapper select { min-width: 80px; font-size: 11px; height: 32px; padding: 4px 8px 4px 26px; background-size: 14px, 8px; }
+        }
+        @media (max-width: 768px) {
+            header { padding: 10px 12px; flex-wrap: wrap; gap: 6px; }
+            .header-title-container h1 { font-size: 13px; }
+            .header-title-container .header-logo { width: 30px; height: 30px; font-size: 14px; }
+            .header-sub { font-size: 10px; }
+            .content-wrapper { padding: 12px; }
+            .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
+            .kpi-card { padding: 14px; }
+            .dashboard-row { grid-template-columns: 1fr; gap: 12px; }
+            .nav-links { flex-wrap: wrap; gap: 6px; }
+            .nav-links .btn-glass, .nav-links a { font-size: 11px; padding: 6px 10px; }
+            .map-section { height: 35vh; }
+            .map-toolbar { top: 8px; left: 8px; gap: 4px; }
+            .map-toolbar .btn-glass { font-size: 10px; padding: 5px 8px; }
+            .box-title { font-size: 13px; }
+            .chart-wrapper { height: 240px !important; }
+            .dashboard-box { padding: 14px; }
+            .table-responsive { max-height: 180px !important; }
+            .gtranslate_wrapper select { min-width: 60px; font-size: 10px; height: 28px; padding: 3px 6px 3px 22px; background-size: 12px, 6px; }
+        }
+        @media (max-width: 480px) {
+            header { flex-direction: column; align-items: stretch; gap: 4px; }
+            .header-title-container .header-sub { display: none; }
+            .map-section { height: 30vh; }
+            .content-wrapper { padding: 8px; }
+            .kpi-card .kpi-value { font-size: 16px !important; }
+            .filters-container { flex-direction: column; gap: 6px; }
+            .filter-item { width: 100%; }
+        }
+        /* ===== LOADER OVERLAY ===== */
+        .loader-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(7,11,20,0.92); backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        .loader-overlay.hidden { opacity: 0; pointer-events: none; }
+        .loader-spinner {
+            width: 48px; height: 48px;
+            border: 3px solid rgba(96,239,255,0.1);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text {
+            font-family: var(--font-heading); font-size: 16px;
+            color: var(--text-muted); letter-spacing: 0.3px;
+        }
+        .fetch-loader { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); padding: 4px 8px; }
+        .fetch-loader .dot-pulse { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-cyan); animation: pulse 1.4s ease-in-out infinite; }
+        .fetch-loader .dot-pulse:nth-child(2) { animation-delay: 0.2s; }
+        .fetch-loader .dot-pulse:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+        /* ===== ONBOARDING ===== */
+        .onboarding-overlay {
+            position: fixed; inset: 0; z-index: 9998;
+            background: rgba(7,11,20,0.75); backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            transition: opacity 0.5s ease;
+        }
+        .onboarding-overlay.hidden { opacity: 0; pointer-events: none; }
+        .onboarding-card {
+            background: linear-gradient(135deg, rgba(14,20,38,0.97), rgba(10,15,30,0.95));
+            border: 1px solid rgba(96,239,255,0.15);
+            border-radius: 24px; padding: 40px 36px;
+            max-width: 440px; width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 40px rgba(96,239,255,0.05);
+        }
+        .onboarding-card > i { font-size: 42px; color: var(--accent-cyan); margin-bottom: 16px; display: block; }
+        .onboarding-card h2 { font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text-light); }
+        .onboarding-card > p { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; }
+        .onboarding-card .steps { text-align: left; margin: 0 0 16px 0; padding: 0; }
+        .onboarding-card .steps li {
+            font-size: 13px; color: var(--text-light); padding: 8px 0 8px 4px;
+            list-style: none; border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .onboarding-card .steps li:last-child { border-bottom: none; }
+        .onboarding-card .steps li i { font-size: 14px; width: 20px; text-align: center; }
+        .onboarding-card button {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            border: none; color: #050810; font-family: var(--font-heading); font-weight: 700;
+            font-size: 15px; padding: 12px 36px; border-radius: 12px; cursor: pointer;
+            transition: var(--transition); letter-spacing: 0.3px;
+        }
+        .onboarding-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,255,135,0.4); }
     </style>
 </head>
 <body>
+
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Memuat data SPKLU...</div>
+    </div>
+
+    <div class="onboarding-overlay hidden" id="onboardingOverlay">
+        <div class="onboarding-card">
+            <i class="fas fa-map-marked-alt"></i>
+            <h2>Selamat Datang di Analitik SPKLU</h2>
+            <p>Dashboard ini menampilkan analisis sebaran SPKLU nasional berdasarkan data publik.</p>
+            <div class="steps">
+                <li><i class="fas fa-fire" style="color:var(--accent-gold);"></i> <strong>Heatmap</strong> &mdash; lihat kepadatan SPKLU di peta</li>
+                <li><i class="fas fa-circle-nodes" style="color:var(--accent-cyan);"></i> <strong>Isodistance</strong> &mdash; jarak jalan ke SPKLU terdekat</li>
+                <li><i class="fas fa-city" style="color:var(--accent-purple);"></i> <strong>Prioritas</strong> &mdash; kota besar tanpa SPKLU</li>
+                <li><i class="fas fa-chart-bar" style="color:var(--accent-green);"></i> <strong>Grafik & Tabel</strong> &mdash; scroll ke bawah untuk detail</li>
+            </div>
+            <button onclick="closeOnboarding()">Mulai</button>
+        </div>
+    </div>
 
     <header>
         <div class="header-title-container">
@@ -444,181 +518,617 @@
                 <i class="fas fa-chart-line"></i>
             </div>
             <div>
-                <h1>Visualisasi Data & Analitik SPKLU</h1>
-                <p style="font-size: 11px; color: var(--text-muted);">Integrasi Spasial Jaringan Transportasi & Kependudukan</p>
+                <h1>Analitik SPKLU Nasional</h1>
+                <p class="header-sub">Peta sebaran, jarak antar stasiun, dan cakupan penduduk</p>
             </div>
         </div>
         <div class="nav-links">
-            <a href="/" class="btn-nav btn-nav-map">
+            <div class="gtranslate_wrapper"></div>
+            <a href="/" class="btn-glass">
                 <i class="fas fa-map-marked-alt"></i> Peta WebGIS
             </a>
         </div>
     </header>
 
     <main>
-        <!-- KPI Cards Section -->
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-info">
-                    <h3>Total SPKLU Nasional</h3>
-                    <div class="kpi-value" id="kpi-total">0<span class="kpi-unit">Stasiun</span></div>
-                </div>
-                <div class="kpi-icon" style="background: rgba(96, 239, 255, 0.15); color: var(--accent-cyan);">
-                    <i class="fas fa-bolt"></i>
-                </div>
+        <div class="map-section">
+            <div class="map-toolbar">
+                <button id="toggle-heat-btn" class="btn-glass" onclick="toggleHeatmap()">
+                    <i class="fas fa-fire"></i> Heatmap
+                </button>
+                <button id="toggle-isodistance-btn" class="btn-glass" onclick="toggleIsodistance()">
+                    <i class="fas fa-circle-nodes"></i> Isodistance
+                </button>
+                <button id="toggle-suggest-btn" class="btn-glass" onclick="toggleSuggest()">
+                    <i class="fas fa-lightbulb"></i> Saran SPKLU
+                </button>
+                <button id="toggle-priority-btn" class="btn-glass" onclick="togglePriorityCities()">
+                    <i class="fas fa-city"></i> Prioritas
+                </button>
             </div>
-            
-            <div class="kpi-card">
-                <div class="kpi-info">
-                    <h3>Provinsi Terbanyak</h3>
-                    <div class="kpi-value" id="kpi-top-prov" style="font-size: 20px; line-height: 1.4;">-</div>
-                </div>
-                <div class="kpi-icon" style="background: rgba(0, 255, 135, 0.15); color: var(--accent-green);">
-                    <i class="fas fa-map"></i>
-                </div>
-            </div>
-            
-            <div class="kpi-card">
-                <div class="kpi-info">
-                    <h3>Rasio SPKLU Tertinggi</h3>
-                    <div class="kpi-value" id="kpi-top-ratio" style="font-size: 20px; line-height: 1.4;">-</div>
-                </div>
-                <div class="kpi-icon" style="background: rgba(255, 215, 0, 0.15); color: var(--accent-yellow);">
-                    <i class="fas fa-users-viewfinder"></i>
-                </div>
-            </div>
+            <div id="map"></div>
         </div>
 
-        <!-- Row 1: Charts & Density Ratio Table -->
-        <div class="dashboard-row">
-            <!-- Left Box: Charts -->
-            <div class="dashboard-box">
-                <div class="box-header">
-                    <h2 class="box-title"><i class="fas fa-chart-simple" style="color: var(--accent-cyan);"></i> Grafik Distribusi & Sebaran</h2>
-                </div>
-                <div class="charts-flex">
-                    <div class="chart-wrapper">
-                        <div class="chart-title-sub">Distribusi per Provinsi (Top 5)</div>
-                        <div class="chart-container">
-                            <canvas id="provinceChartFull"></canvas>
+        <div class="content-wrapper">
+                <!-- KPI Cards -->
+                <div class="kpi-grid" style="margin-bottom:24px;">
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <h3>Total SPKLU Nasional</h3>
+                            <div class="kpi-value" id="kpi-total">0<span class="kpi-unit">Stasiun</span></div>
+                        </div>
+                        <div class="kpi-icon" style="background:rgba(96,239,255,0.12); color:var(--accent-cyan);">
+                            <i class="fas fa-bolt"></i>
                         </div>
                     </div>
-                    
-                    <div class="chart-wrapper">
-                        <div class="chart-title-sub">Distribusi per Kota/Kabupaten (Top 5)</div>
-                        <div class="chart-container">
-                            <canvas id="cityChartFull"></canvas>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <h3>Provinsi Terbanyak</h3>
+                            <div class="kpi-value" id="kpi-top-prov" style="font-size:20px; line-height:1.4;">-</div>
+                        </div>
+                        <div class="kpi-icon" style="background:rgba(0,255,135,0.12); color:var(--accent-green);">
+                            <i class="fas fa-map"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <h3>Rasio SPKLU Tertinggi</h3>
+                            <div class="kpi-value" id="kpi-top-ratio" style="font-size:20px; line-height:1.4;">-</div>
+                        </div>
+                        <div class="kpi-icon" style="background:rgba(255,215,0,0.12); color:var(--accent-gold);">
+                            <i class="fas fa-users-viewfinder"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-info">
+                            <h3>Indeks Gini</h3>
+                            <div class="kpi-value" style="font-size:22px;">
+                                <span id="gini-value" style="color:var(--accent-gold);font-weight:800;">-</span>
+                            </div>
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">0 = merata · 1 = timpang</div>
+                        </div>
+                        <div class="kpi-icon" style="background:rgba(255,215,0,0.12); color:var(--accent-gold);">
+                            <i class="fas fa-scale-balanced"></i>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right Box: Density Table -->
-            <div class="dashboard-box">
-                <div class="box-header">
-                    <h2 class="box-title"><i class="fas fa-users" style="color: var(--accent-yellow);"></i> Kepadatan SPKLU (Rasio per 100K Penduduk)</h2>
-                    <div class="box-actions">
-                        <button id="download-density-btn" class="btn-action" onclick="downloadCSV('density')" style="display:none;">
-                            <i class="fas fa-download"></i> CSV
-                        </button>
+                <!-- Charts Row -->
+                <div class="dashboard-row">
+                    <div class="dashboard-box">
+                        <div class="box-header">
+                            <h2 class="box-title"><i class="fas fa-chart-simple" style="color:var(--accent-cyan);"></i> Distribusi</h2>
+                        </div>
+                        <div class="charts-flex">
+                            <div class="chart-wrapper">
+                                <div class="chart-title-sub">Per Provinsi (Top 5)</div>
+                                <div class="chart-container"><canvas id="provinceChartFull"></canvas></div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <div class="chart-title-sub">Per Kota (Top 5)</div>
+                                <div class="chart-container"><canvas id="cityChartFull"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-box">
+                        <div class="box-header">
+                            <h2 class="box-title"><i class="fas fa-crosshairs" style="color:var(--accent-purple);"></i> Jarak Antar SPKLU</h2>
+                            <div class="box-actions"><span style="font-size:11px;color:var(--text-muted);">Tetangga terdekat antar stasiun</span></div>
+                        </div>
+                        <div class="chart-wrapper" style="height:340px;">
+                            <div class="chart-title-sub">Distribusi Jarak ke SPKLU Terdekat <span class="fetch-loader" id="distance-loader"><span class="dot-pulse"></span><span class="dot-pulse"></span><span class="dot-pulse"></span></span></div>
+                            <div class="chart-container"><canvas id="distanceChart"></canvas></div>
+                            <div id="distance-aggregates" style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-glass); font-size:11px; color:var(--text-muted);">
+                                <span>Rata-Rata: <strong id="dist-avg" style="color:var(--accent-cyan);">-</strong> km</span>
+                                <span>Median: <strong id="dist-median" style="color:var(--accent-cyan);">-</strong> km</span>
+                                <span>Minimum: <strong id="dist-min" style="color:var(--accent-green);">-</strong> km</span>
+                                <span>Maksimum: <strong id="dist-max" style="color:var(--accent-gold);">-</strong> km</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="table-responsive" style="max-height: 320px;">
-                    <table id="density-table">
-                        <thead>
-                            <tr>
-                                <th>Kota / Kabupaten</th>
-                                <th>Penduduk</th>
-                                <th>SPKLU</th>
-                                <th>Per 100K</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Memuat data rasio...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
-        <!-- Row 2: Complete Paginated SPKLU Data Table -->
-        <div class="dashboard-box data-section">
-            <div class="box-header">
-                <h2 class="box-title"><i class="fas fa-table" style="color: var(--accent-purple);"></i> Tabel Data Lengkap SPKLU Indonesia</h2>
-                <div class="box-actions">
-                    <button id="download-spklu-btn" class="btn-action" onclick="downloadCSV('spklu')" style="display:none;">
-                        <i class="fas fa-file-csv"></i> Unduh Data (.csv)
-                    </button>
+                <!-- Priority Cities + Gini Table Row -->
+                <div class="dashboard-row">
+                    <div class="dashboard-box">
+                        <div class="box-header">
+                            <h2 class="box-title"><i class="fas fa-city" style="color:var(--accent-purple);"></i> Kota Prioritas</h2>
+                            <div class="box-actions"><span style="font-size:11px; color:var(--text-muted);">&gt;100k jiwa, 0 SPKLU — <strong id="priority-count" style="color:var(--accent-red);">-</strong></span></div>
+                        </div>
+                        <div class="table-responsive" style="max-height:280px;">
+                            <table>
+                                <thead><tr><th>Kota</th><th>Provinsi</th><th>Penduduk</th></tr></thead>
+                                <tbody id="priority-cities-body">
+                                    <tr><td colspan="3" style="text-align:center;color:var(--text-muted);">Memuat...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="dashboard-box">
+                        <div class="box-header">
+                            <h2 class="box-title"><i class="fas fa-scale-balanced" style="color:var(--accent-gold);"></i> Indeks Gini</h2>
+                            <div class="box-actions"><span style="font-size:11px;color:var(--text-muted);">Provinsi — SPKLU per 100K penduduk</span></div>
+                        </div>
+                        <div class="table-responsive" style="max-height:280px;">
+                            <table>
+                                <thead><tr><th>Provinsi</th><th>SPKLU</th><th>Penduduk</th><th>Per 100K</th></tr></thead>
+                                <tbody id="gini-table-body">
+                                    <tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Memuat...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Filters -->
-            <div class="filters-container">
-                <div class="filter-item" style="flex-grow: 2;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="search-filter" class="input-control input-control-search" placeholder="Cari nama stasiun SPKLU atau alamat...">
-                </div>
-                <div class="filter-item">
-                    <select id="prov-filter" class="input-control">
-                        <option value="">-- Semua Provinsi --</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <select id="city-filter" class="input-control">
-                        <option value="">-- Semua Kota / Kabupaten --</option>
-                    </select>
-                </div>
-            </div>
 
-            <!-- Table -->
-            <div class="table-responsive">
-                <table id="spklu-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">GID</th>
-                            <th>Nama Stasiun SPKLU</th>
-                            <th>Alamat Lengkap</th>
-                            <th>Kota / Kabupaten</th>
-                            <th>Provinsi</th>
-                            <th style="width: 180px;">Koordinat</th>
-                        </tr>
-                    </thead>
-                    <tbody id="spklu-table-body">
-                        <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat basis data SPKLU...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+                <!-- Density Table -->
+                <div class="dashboard-box" style="margin-bottom:22px;">
+                    <div class="box-header">
+                        <h2 class="box-title"><i class="fas fa-users" style="color:var(--accent-gold);"></i> Kepadatan SPKLU</h2>
+                        <div class="box-actions"><span style="font-size:11px;color:var(--text-muted);">SPKLU per 100K penduduk</span></div>
+                    </div>
+                    <div class="table-responsive" style="max-height:260px;">
+                        <table id="density-table">
+                            <thead><tr><th>Kota / Kabupaten</th><th>Penduduk</th><th>SPKLU</th><th>Per 100K</th></tr></thead>
+                            <tbody>
+                                <tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Memuat data rasio...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-            <!-- Pagination -->
-            <div class="pagination-container">
-                <div class="pagination-info" id="pagination-info">
-                    Menampilkan 0 - 0 dari 0 data SPKLU
+                <!-- SPKLU Data Table -->
+                <div class="dashboard-box">
+                    <div class="box-header">
+                        <h2 class="box-title"><i class="fas fa-table" style="color:var(--accent-purple);"></i> Data SPKLU</h2>
+                        <div class="box-actions"></div>
+                    </div>
+                    <div class="filters-container">
+                        <div class="filter-item" style="flex-grow:2;">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="search-filter" class="input-control input-control-search" placeholder="Cari nama/alamat...">
+                        </div>
+                        <div class="filter-item">
+                            <select id="prov-filter" class="input-control">
+                                <option value="">-- Semua Provinsi --</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <select id="city-filter" class="input-control">
+                                <option value="">-- Semua Kota --</option>
+                            </select>
+                        </div>
+                    </div>
+                <div class="table-responsive" style="max-height:300px;">
+                        <table id="spklu-table">
+                            <thead><tr><th style="width:50px;">ID</th><th>Nama</th><th>Alamat</th><th>Kota</th><th>Provinsi</th><th style="width:160px;">Koordinat</th></tr></thead>
+                            <tbody id="spklu-table-body">
+                                <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px;">
+                                    <div class="fetch-loader">Memuat data <span class="dot-pulse"></span><span class="dot-pulse"></span><span class="dot-pulse"></span></div>
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container">
+                        <div class="pagination-info" id="pagination-info">0–0 dari 0 data</div>
+                        <div class="pagination-buttons" id="pagination-buttons"></div>
+                    </div>
                 </div>
-                <div class="pagination-buttons" id="pagination-buttons">
-                    <!-- Buttons will be injected here -->
+
+                <!-- Metode & Footer -->
+                <div class="dashboard-box" style="margin-top:22px;">
+                    <div class="box-header">
+                        <h2 class="box-title"><i class="fas fa-flask" style="color:var(--accent-cyan);"></i> Metode & Akurasi</h2>
+                        <div class="box-actions"><span style="font-size:11px;color:var(--text-muted);">Klik untuk detail</span></div>
+                    </div>
+                    <div class="method-grid">
+                        <button class="method-btn" onclick="showMethod('coverage')">Cakupan</button>
+                        <button class="method-btn" onclick="showMethod('gini')">Gini</button>
+                        <button class="method-btn" onclick="showMethod('priority')">Prioritas</button>
+                        <button class="method-btn" onclick="showMethod('projection')">Proyeksi</button>
+                        <button class="method-btn" onclick="showMethod('distance')">Jarak SPKLU</button>
+                        <button class="method-btn" onclick="showMethod('isodistance')">Isodistance</button>
+                        <button class="method-btn" onclick="showMethod('suggest')">Saran SPKLU</button>
+                    </div>
+                    <div id="method-detail"></div>
                 </div>
-            </div>
+
+                <div class="dashboard-box" style="margin-top:22px; text-align:center; padding:20px;">
+                    <div style="font-size:13px; color:var(--text-muted); line-height:1.7; max-width:600px; margin:0 auto;">
+                        <i class="fas fa-info-circle" style="color:var(--accent-cyan); margin-right:6px;"></i>
+                        Data yang dipakai bersumber dari publik dan berskala nasional. Karena data infrastruktur pendukung (listrik, jalan, lahan) tidak bisa saya akses, hasil ini sifatnya indikatif — bukan acuan tunggal buat pengambilan keputusan.
+                    </div>
+                </div>
         </div>
     </main>
 
     <script>
         // Global variables for data caching
         let statsData = null;
+        let comprehensiveData = null;
         let spkluList = [];
         let filteredList = [];
+        
+        // Map global
+        let map;
         
         // Pagination state
         let currentPage = 1;
         const rowsPerPage = 50;
 
+        function closeOnboarding() {
+            document.getElementById('onboardingOverlay').classList.add('hidden');
+            localStorage.setItem('onboarding_done', 'true');
+        }
+        function showLoader() { document.getElementById('loaderOverlay').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('loaderOverlay').classList.add('hidden'); }
+
+        // Layer references for toggle
+        let heatLayer = null;
+        let isodistanceGroup = null;
+        let heatActive = false;
+        let isodistanceActive = false;
+        let roadIsodistanceLayer = null;
+        let suggestLayer = null;
+        let suggestActive = false;
+        let priorityLayer = null;
+        let priorityActive = false;
+        let legendCtrl = null;
+        let legendVisible = true;
+
+        // Initialize Leaflet map with dark theme
+        function initMap() {
+            map = L.map('map').setView([-2.5, 117.5], 5);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+            isodistanceGroup = L.layerGroup().addTo(map);
+            roadIsodistanceLayer = L.layerGroup().addTo(map);
+            suggestLayer = L.layerGroup().addTo(map);
+            buildLegend();
+            // Zoom-based reload for road isodistance (LOD)
+            map.on('zoomend', function() {
+                if (isodistanceActive) {
+                    roadIsodistanceLayer.clearLayers();
+                    loadRoadIsodistance();
+                }
+            });
+        }
+
+        // Build legend
+        function buildLegend() {
+            if (legendCtrl) map.removeControl(legendCtrl);
+            legendCtrl = L.control({ position: 'bottomleft' });
+            legendCtrl.onAdd = function() {
+                const div = L.DomUtil.create('div', 'info legend');
+                div.style.background = 'rgba(12,15,29,0.9)';
+                div.style.color = '#f3f4f6';
+                div.style.padding = '10px 14px';
+                div.style.borderRadius = '10px';
+                div.style.border = '1px solid rgba(255,255,255,0.08)';
+                div.style.fontSize = '12px';
+                div.style.backdropFilter = 'blur(8px)';
+                div.style.cursor = 'pointer';
+                div.onclick = function() { toggleLegend(); };
+                div.innerHTML = `
+                    <div style="font-weight:600; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>Legenda</span>
+                        <span id="legend-toggle-icon" style="font-size:10px; opacity:0.6;">&#9660;</span>
+                    </div>
+                    <div id="legend-body">
+                        <div style="margin-top:4px;"><span style="display:inline-block; width:12px; height:12px; border-radius:2px; background:linear-gradient(135deg,#0066ff,#ff0066); margin-right:6px; vertical-align:middle;"></span> Heatmap Kepadatan</div>
+                        <hr style="border-color:rgba(255,255,255,0.08); margin:6px 0;">
+                        <div style="font-weight:500; margin-bottom:4px;">Jarak Ruas Jalan ke SPKLU:</div>
+                        <div><span style="display:inline-block; width:12px; height:6px; border-radius:2px; background:#00ff87; margin-right:6px;"></span> &lt; 1 km (Dekat)</div>
+                        <div><span style="display:inline-block; width:12px; height:6px; border-radius:2px; background:#60efff; margin-right:6px;"></span> 1–5 km</div>
+                        <div><span style="display:inline-block; width:12px; height:6px; border-radius:2px; background:#ffd700; margin-right:6px;"></span> 5–10 km</div>
+                        <div><span style="display:inline-block; width:12px; height:6px; border-radius:2px; background:#ff9f00; margin-right:6px;"></span> 10–20 km</div>
+                        <div><span style="display:inline-block; width:12px; height:6px; border-radius:2px; background:#ff4a4a; margin-right:6px;"></span> &gt; 20 km (Jauh)</div>
+                        <hr style="border-color:rgba(255,255,255,0.08); margin:6px 0;">
+                        <div style="font-weight:500; margin-bottom:4px;">Saran SPKLU Baru:</div>
+                        <div><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ff0044; margin-right:6px;"></span> Kritis (&gt; 50 km)</div>
+                        <div><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ff6600; margin-right:6px;"></span> Tinggi (20–50 km)</div>
+                        <div><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ffd700; margin-right:6px;"></span> Sedang (10–20 km)</div>
+                        <hr style="border-color:rgba(255,255,255,0.08); margin:6px 0;">
+                        <div><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:var(--accent-cyan); margin-right:6px; vertical-align:middle;"></span> Titik SPKLU (4.515 lokasi)</div>
+                        <hr style="border-color:rgba(255,255,255,0.08); margin:6px 0;">
+                        <div><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ff4a6a; margin-right:6px; vertical-align:middle;"></span> Kota Prioritas (>100k jiwa, 0 SPKLU)</div>
+                    </div>
+                `;
+                return div;
+            };
+            legendCtrl.addTo(map);
+        }
+
+        function toggleLegend() {
+            const body = document.getElementById('legend-body');
+            const icon = document.getElementById('legend-toggle-icon');
+            if (body) {
+                const hidden = body.style.display === 'none';
+                body.style.display = hidden ? 'block' : 'none';
+                if (icon) icon.innerHTML = hidden ? '&#9660;' : '&#9650;';
+            }
+        }
+
+        // Toggle Heatmap
+        function toggleHeatmap() {
+            heatActive = !heatActive;
+            const btn = document.getElementById('toggle-heat-btn');
+            if (heatActive) {
+                if (!heatLayer && spkluList.length > 0) {
+                    const points = spkluList
+                        .filter(p => p.lat && p.lon)
+                        .map(p => [p.lat, p.lon, 0.5]);
+                    heatLayer = L.heatLayer(points, {
+                        radius: 30,
+                        blur: 20,
+                        maxZoom: 17,
+                        gradient: { 0.0: '#0000ff', 0.25: '#0066ff', 0.5: '#00ff87', 0.7: '#ffd700', 0.85: '#ff6600', 1.0: '#ff0044' }
+                    });
+                }
+                if (heatLayer) map.addLayer(heatLayer);
+                btn.innerHTML = '<i class="fas fa-fire"></i> Sembunyikan Heatmap';
+                btn.style.borderColor = 'var(--accent-cyan)';
+            } else {
+                if (heatLayer) map.removeLayer(heatLayer);
+                btn.innerHTML = '<i class="fas fa-fire"></i> Tampilkan Heatmap';
+                btn.style.borderColor = 'var(--border-color)';
+            }
+        }
+
+        // Toggle Isodistance via Jalan Nasional
+        function toggleIsodistance() {
+            isodistanceActive = !isodistanceActive;
+            const btn = document.getElementById('toggle-isodistance-btn');
+            isodistanceGroup.clearLayers();
+            roadIsodistanceLayer.clearLayers();
+            if (isodistanceActive) {
+                loadRoadIsodistance();
+                btn.innerHTML = '<i class="fas fa-circle-nodes"></i> Sembunyikan Isodistance';
+                btn.style.borderColor = 'var(--accent-yellow)';
+            } else {
+                btn.innerHTML = '<i class="fas fa-circle-nodes"></i> Tampilkan Isodistance';
+                btn.style.borderColor = 'var(--border-color)';
+            }
+        }
+
+        // Toggle Saran SPKLU Baru
+        function toggleSuggest() {
+            suggestActive = !suggestActive;
+            const btn = document.getElementById('toggle-suggest-btn');
+            suggestLayer.clearLayers();
+            if (suggestActive) {
+                loadSuggestions();
+                btn.innerHTML = '<i class="fas fa-lightbulb"></i> Sembunyikan Saran';
+                btn.style.borderColor = 'var(--accent-green)';
+            } else {
+                btn.innerHTML = '<i class="fas fa-lightbulb"></i> Saran SPKLU Baru';
+                btn.style.borderColor = 'var(--border-color)';
+            }
+        }
+
+        // Load suggestions for new SPKLU locations
+        async function loadSuggestions() {
+            try {
+                const res = await fetch('/api/analytics/suggest-spklu');
+                const data = await res.json();
+                if (!data.features || data.features.length === 0) return;
+                // Icons for priority levels
+                const priorityColors = { Kritis: '#ff0044', Tinggi: '#ff6600', Sedang: '#ffd700' };
+                const priorityIcons = {
+                    Kritis: '<i class="fas fa-exclamation-triangle" style="color:#ff0044"></i>',
+                    Tinggi: '<i class="fas fa-exclamation-circle" style="color:#ff6600"></i>',
+                    Sedang: '<i class="fas fa-info-circle" style="color:#ffd700"></i>'
+                };
+                L.geoJSON(data, {
+                    pointToLayer: function(f, latlng) {
+                        const color = priorityColors[f.properties.prioritas] || '#fff';
+                        return L.circleMarker(latlng, {
+                            radius: 10,
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.4,
+                            weight: 2
+                        });
+                    },
+                    onEachFeature: function(f, l) {
+                        const p = f.properties;
+                        l.bindPopup(`
+                            <div class="popup-card" style="font-size:12px; min-width:200px;">
+                                <div style="font-weight:600; margin-bottom:6px;">${priorityIcons[p.prioritas]} Prioritas ${p.prioritas}</div>
+                                <div><strong>Ruas Jalan:</strong> ${p.road || '-'}</div>
+                                <div><strong>Jarak ke SPKLU terdekat:</strong> ${p.jarak_km} km</div>
+                                <div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.08);">
+                                    <span style="color:var(--accent-green);">✓ Rekomendasi penambahan SPKLU di titik ini</span>
+                                </div>
+                            </div>
+                        `);
+                        l.on('mouseover', function() { this.setStyle({ radius: 14, fillOpacity: 0.7 }); });
+                        l.on('mouseout', function() { this.setStyle({ radius: 10, fillOpacity: 0.4 }); });
+                    }
+                }).addTo(suggestLayer);
+                // Fit map to suggestions if none other active
+                if (!isodistanceActive) {
+                    const bounds = suggestLayer.getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30] });
+                }
+            } catch (e) {
+                console.error('Suggestions error:', e);
+            }
+        }
+
+        // Toggle Priority Cities
+        function togglePriorityCities() {
+            priorityActive = !priorityActive;
+            const btn = document.getElementById('toggle-priority-btn');
+            if (priorityLayer) {
+                map.removeLayer(priorityLayer);
+                priorityLayer = null;
+            }
+            if (priorityActive) {
+                loadPriorityCities();
+                btn.innerHTML = '<i class="fas fa-city"></i> Sembunyikan Prioritas';
+                btn.style.borderColor = 'var(--accent-red)';
+            } else {
+                btn.innerHTML = '<i class="fas fa-city"></i> Prioritas';
+                btn.style.borderColor = 'var(--border-color)';
+            }
+        }
+
+        async function loadPriorityCities() {
+            try {
+                if (!comprehensiveData) {
+                    const res = await fetch('/api/analytics/comprehensive');
+                    comprehensiveData = await res.json();
+                }
+                const data = comprehensiveData;
+                if (!data.priority_cities || data.priority_cities.length === 0) return;
+                priorityLayer = L.layerGroup().addTo(map);
+                data.priority_cities.forEach(c => {
+                    if (!c.lat || !c.lon || (c.lat === 0 && c.lon === 0)) return;
+                    const marker = L.circleMarker([c.lat, c.lon], {
+                        radius: 8,
+                        color: '#ff4a6a',
+                        fillColor: '#ff4a6a',
+                        fillOpacity: 0.35,
+                        weight: 2
+                    }).addTo(priorityLayer);
+                    marker.bindPopup(`
+                        <div style="font-size:12px; min-width:180px;">
+                            <div style="font-weight:600; margin-bottom:4px; color:#ff4a6a;">Kota Prioritas</div>
+                            <div><strong>${c.city}</strong></div>
+                            <div>${c.province || '-'}</div>
+                            <div>Penduduk: <strong>${parseInt(c.population).toLocaleString('id-ID')}</strong></div>
+                            <div style="margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.08);">
+                                <span style="color:var(--accent-green);">✓ Butuh SPKLU segera</span>
+                            </div>
+                        </div>
+                    `);
+                    marker.on('mouseover', function() { this.setStyle({ radius: 12, fillOpacity: 0.6 }); });
+                    marker.on('mouseout', function() { this.setStyle({ radius: 8, fillOpacity: 0.35 }); });
+                });
+                if (data.priority_cities.length > 0) {
+                    const bounds = priorityLayer.getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 8 });
+                }
+            } catch (e) {
+                console.error('Priority cities error:', e);
+            }
+        }
+
+        // Load road isodistance — warna ruas jalan berdasarkan jarak ke SPKLU terdekat
+        async function loadRoadIsodistance() {
+            try {
+                const zoom = map.getZoom();
+                const res = await fetch(`/api/analytics/road-isodistance?zoom=${zoom}`);
+                const data = await res.json();
+                if (!data.features) return;
+                L.geoJSON(data, {
+                    style: function(f) {
+                        const d = f.properties.nearest_spklu_km || 0;
+                        let color = '#00ff87';
+                        if (d > 20) color = '#ff4a4a';
+                        else if (d > 10) color = '#ff9f00';
+                        else if (d > 5) color = '#ffd700';
+                        else if (d > 1) color = '#60efff';
+                        return {
+                            color: color,
+                            weight: 1.5,
+                            opacity: 0.7
+                        };
+                    },
+                    onEachFeature: function(f, l) {
+                        const d = f.properties.nearest_spklu_km || 0;
+                        l.bindPopup(`
+                            <div class="popup-card" style="font-size:12px;">
+                                <strong>${f.properties.name || 'Jalan Nasional'}</strong><br>
+                                Jarak ke SPKLU terdekat: <strong>${d} km</strong><br>
+                                Kelas: ${f.properties.class || '-'} | Panjang: ${f.properties.length || '-'} km
+                            </div>
+                        `);
+                    }
+                }).addTo(roadIsodistanceLayer);
+            } catch (e) {
+                console.error('Road isodistance error:', e);
+            }
+        }
+
         // Load data on start
         window.addEventListener('DOMContentLoaded', async () => {
-            await loadStats();
-            await loadSPKLUList();
+            initMap();
+            // Hide loader after map loads (core UI visible), data fills in behind
+            setTimeout(hideLoader, 800);
+            if (!localStorage.getItem('onboarding_done')) {
+                document.getElementById('onboardingOverlay').classList.remove('hidden');
+            }
+            loadDistanceStats();
+            await Promise.all([
+                loadStats(),
+                loadSPKLUList()
+            ]);
+            hideLoader();
             setupFilterListeners();
         });
 
-        // Fetch Analytics Stats (KPI, charts, density table)
+        // Fetch distance statistics and render chart
+        async function loadDistanceStats() {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 30000);
+                const res = await fetch('/api/analytics/distance-stats', { signal: controller.signal });
+                clearTimeout(timeout);
+                if (!res.ok) {
+                    console.warn('Distance stats returned', res.status);
+                    return null;
+                }
+                const data = await res.json();
+                const loader = document.getElementById('distance-loader');
+                if (loader) loader.style.display = 'none';
+                if (!data.distribution || !Array.isArray(data.distribution)) {
+                    console.warn('Distance stats: invalid data', data);
+                    return null;
+                }
+                const ctx = document.getElementById('distanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.distribution.map(d => d.bucket),
+                        datasets: [{
+                            label: 'Jumlah SPKLU',
+                            data: data.distribution.map(d => d.count),
+                            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#9ca3af', font: { family: 'Inter', size: 10 } } },
+                            title: { display: true, color: '#9ca3af', font: { family: 'Outfit', size: 12 }, text: 'Distribusi Jarak Antar SPKLU (Tetangga Terdekat)' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 9 } }, title: { display: true, color: '#8892a4', text: 'Jumlah' } },
+                            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 8 } }, title: { display: true, color: '#8892a4', text: 'Jarak (km)' } }
+                        }
+                    }
+                });
+                // Aggregate stats
+                if (data.aggregates) {
+                    document.getElementById('dist-avg').textContent = data.aggregates.avg;
+                    document.getElementById('dist-median').textContent = data.aggregates.median;
+                    document.getElementById('dist-min').textContent = data.aggregates.min;
+                    document.getElementById('dist-max').textContent = data.aggregates.max;
+                }
+                return data;
+            } catch (e) {
+                console.error('Distance stats error:', e);
+                return null;
+            }
+        }
+
+        // Fetch Analytics Stats
         async function loadStats() {
             try {
                 const res = await fetch('/api/stats');
@@ -643,8 +1153,40 @@
                 // 3. Render Charts
                 renderCharts(statsData);
 
+                // 4. Load comprehensive analytics
+                loadComprehensiveAnalytics();
+
             } catch (err) {
                 console.error("Gagal memuat analitik:", err);
+            }
+        }
+
+        // Fetch comprehensive analyses
+        async function loadComprehensiveAnalytics() {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 60000);
+                const res = await fetch('/api/analytics/comprehensive', { signal: controller.signal });
+                clearTimeout(timeout);
+                if (!res.ok) return;
+                const data = await res.json();
+                comprehensiveData = data;
+
+                // Gini index
+                document.getElementById('gini-value').textContent = data.gini;
+
+                // Priority cities count KPI
+                const pc = document.getElementById('priority-count');
+                if (pc) pc.textContent = data.priority_cities ? data.priority_cities.length : 0;
+
+                // Priority cities table
+                populatePriorityCities(data.priority_cities);
+
+                // Gini table — provinces sorted by ratio descending
+                populateGiniTable(data.provinces);
+
+            } catch (e) {
+                console.error('Comprehensive analytics error:', e);
             }
         }
 
@@ -695,9 +1237,11 @@
                 }
             };
 
-            // Province Chart (Horizontal Bar)
-            const ctxProv = document.getElementById('provinceChartFull').getContext('2d');
-            new Chart(ctxProv, {
+            // Province Chart (Horizontal Bar) — destroy existing if any
+            const provCanvas = document.getElementById('provinceChartFull');
+            if (provCanvas._chart) provCanvas._chart.destroy();
+            const ctxProv = provCanvas.getContext('2d');
+            provCanvas._chart = new Chart(ctxProv, {
                 type: 'bar',
                 data: {
                     labels: provLabels,
@@ -711,13 +1255,18 @@
                 },
                 options: {
                     ...chartOptions,
-                    indexAxis: 'y'
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
             });
 
-            // City Chart (Pie / Doughnut)
-            const ctxCity = document.getElementById('cityChartFull').getContext('2d');
-            new Chart(ctxCity, {
+            // City Chart (Doughnut) — destroy existing if any
+            const cityCanvas = document.getElementById('cityChartFull');
+            if (cityCanvas._chart) cityCanvas._chart.destroy();
+            const ctxCity = cityCanvas.getContext('2d');
+            cityCanvas._chart = new Chart(ctxCity, {
                 type: 'doughnut',
                 data: {
                     labels: cityLabels,
@@ -944,37 +1493,122 @@
             citySelect.addEventListener('change', applyFilters);
         }
 
-        // CSV Export Function
-        function downloadCSV(type) {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            let filename = "";
-
-            if (type === 'density') {
-                filename = "rasio_kepadatan_spklu.csv";
-                // Header
-                csvContent += "Kota/Kabupaten,Jumlah Penduduk,Jumlah SPKLU,Rasio Per 100K Penduduk\n";
-                // Rows
-                statsData.densities.forEach(row => {
-                    csvContent += `"${row.city}",${row.population},${row.count},${row.ratio.toFixed(4)}\n`;
-                });
-            } else if (type === 'spklu') {
-                filename = "sebaran_spklu_nasional.csv";
-                // Header
-                csvContent += "GID,Nama Stasiun,Alamat,Kota/Kabupaten,Provinsi,Latitude,Longitude\n";
-                // Rows (using filtered items, or full list? Let's use filtered list so they can download their filtered query!)
-                filteredList.forEach(row => {
-                    csvContent += `${row.gid},"${row.name.replace(/"/g, '""')}","${row.address.replace(/"/g, '""')}","${row.city || ''}","${row.province}",${row.lat},${row.lon}\n`;
-                });
+        // === Comprehensive Analytics Renderers ===
+        function populatePriorityCities(cities) {
+            const tbody = document.getElementById('priority-cities-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!cities || cities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">Semua kota sudah terlayani SPKLU ✅</td></tr>';
+                return;
             }
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            cities.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${c.city}</strong></td>
+                    <td>${c.province || '-'}</td>
+                    <td class="number-col" style="color:var(--accent-yellow);font-weight:600;">${c.population.toLocaleString('id-ID')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
+
+        function populateGiniTable(provinces) {
+            const tbody = document.getElementById('gini-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!provinces || provinces.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Data tidak tersedia</td></tr>';
+                return;
+            }
+            const sorted = [...provinces].sort((a, b) => (b.ratio || 0) - (a.ratio || 0));
+            sorted.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.province}</strong></td>
+                    <td class="number-col">${p.spklu}</td>
+                    <td class="number-col">${(p.population || 0).toLocaleString('id-ID')}</td>
+                    <td class="number-col" style="color:var(--accent-cyan);font-weight:600;">${p.ratio || 0}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // === Metode Analisis ===
+        const analysisMethods = {
+            coverage: {
+                title: 'Cakupan Populasi',
+                method: 'Perhitungan jumlah penduduk pada kota/kabupaten yang memiliki minimal satu unit SPKLU dilakukan melalui mekanisme penggabungan (LEFT JOIN) antara tabel sebaran_spklu dengan tabel jumlah_penduduk_kabkot berdasarkan kesamaan kolom wadmkk. Apabila suatu kota/kabupaten memiliki setidaknya satu titik SPKLU, maka seluruh penduduk kota/kabupaten tersebut dianggap telah tercakup oleh layanan pengisian kendaraan listrik.',
+                data: 'Tabel jumlah_penduduk_kabkot yang mencakup 514 kabupaten/kota di seluruh Indonesia, dan tabel sebaran_spklu yang mencakup 4.515 titik stasiun pengisian kendaraan listrik umum.',
+                accuracy: 'Analisis ini akurat pada level kota/kabupaten. Namun demikian, metode ini mengandung asumsi bahwa satu titik SPKLU sudah mencakup seluruh penduduk dalam satu wilayah administratif, sehingga tidak memperhitungkan jarak riil antara lokasi tempat tinggal penduduk dengan titik SPKLU terdekat.'
+            },
+            gini: {
+                title: 'Indeks Gini SPKLU',
+                method: 'Seluruh provinsi di Indonesia diurutkan berdasarkan jumlah SPKLU yang dimiliki (dari yang terendah hingga tertinggi). Koefisien Gini dihitung menggunakan rumus: G = (2 · Σ(i · xᵢ)) / (n · Σxᵢ) − (n + 1) / n, di mana xᵢ merupakan jumlah SPKLU pada provinsi ke-i setelah diurutkan, dan n merupakan jumlah total provinsi. Nilai Gini berkisar antara 0 hingga 1, di mana 0 menunjukkan pemerataan sempurna dan 1 menunjukkan ketimpangan absolut.',
+                data: 'Jumlah SPKLU per provinsi yang diperoleh dari tabel sebaran_spklu, mencakup 38 provinsi di Indonesia.',
+                accuracy: 'Koefisien Gini ini dihitung berbasis kuantitas absolut jumlah SPKLU, bukan berbasis rasio per kapita. Provinsi dengan luas wilayah yang besar secara alamiah akan memiliki jumlah SPKLU yang lebih banyak, sehingga berpotensi menunjukkan ketimpangan yang lebih tinggi tanpa mempertimbangkan kebutuhan per kapita.'
+            },
+            priority: {
+                title: 'Kota Prioritas',
+                method: 'Proses identifikasi kota/kabupaten prioritas dilakukan melalui mekanisme LEFT JOIN antara tabel sebaran_spklu dan tabel jumlah_penduduk_kabkot. Data kemudian difilter berdasarkan dua kriteria, yaitu jumlah penduduk lebih dari 100.000 jiwa dan tidak memiliki satu pun titik SPKLU (COUNT(gid) = 0). Hasilnya adalah daftar kota/kabupaten berpenduduk besar yang belum terlayani oleh infrastruktur pengisian kendaraan listrik.',
+                data: 'Tabel jumlah_penduduk_kabkot yang mencakup 514 kabupaten/kota dan tabel sebaran_spklu yang mencakup 4.515 titik SPKLU.',
+                accuracy: 'Hasil analisis ini bersifat akurat karena bersumber dari data sensus kependudukan Badan Pusat Statistik (BPS) pada kolom jumlah_penduduk dan data riil sebaran SPKLU dari lapangan.'
+            },
+            projection: {
+                title: 'Proyeksi Kebutuhan SPKLU',
+                method: 'Provinsi DKI Jakarta, yang memiliki rasio SPKLU per 100.000 penduduk tertinggi, dijadikan sebagai tolok ukur (benchmark) utama. Kebutuhan penambahan SPKLU pada setiap provinsi dihitung dengan rumus: kebutuhan = (rasio_target × populasi_provinsi / 100.000) − jumlah_SPKLU_saat_ini. Rasio target diperoleh dari rasio SPKLU per 100.000 penduduk di DKI Jakarta. Selisih antara kebutuhan dan jumlah eksisting menghasilkan angka kesenjangan (gap) yang perlu dipenuhi.',
+                data: 'Tabel jumlah_penduduk_kabkot yang diagregasi berdasarkan provinsi dan tabel sebaran_spklu untuk memperoleh jumlah SPKLU per provinsi.',
+                accuracy: 'Proyeksi ini menggunakan asumsi yang bersifat kasar karena tidak mempertimbangkan faktor geografis, kepadatan arus lalu lintas, daya beli masyarakat, ketersediaan jaringan listrik, serta kesiapan infrastruktur pendukung lainnya. Hasil proyeksi hanya merupakan indikasi awal dan tidak dapat dijadikan sebagai satu-satunya acuan dalam perencanaan pengembangan infrastruktur SPKLU.'
+            },
+            isodistance: {
+                title: 'Isodistance Jalan Nasional',
+                reason: 'Metode isodistance dipilih sebagai analisis utama karena jaringan jalan nasional merupakan dataset spasial yang paling lengkap dan terstruktur secara nasional di Indonesia. Data ruas jalan nasional memiliki cakupan yang merata di seluruh provinsi, sehingga cocok dijadikan sebagai kerangka acuan (framework) untuk mengukur tingkat aksesibilitas suatu wilayah terhadap infrastruktur SPKLU. Dengan pendekatan ini, pengguna dapat melihat secara visual ruas jalan mana saja yang sudah dekat dengan SPKLU (terlayani) dan ruas jalan mana yang masih memiliki kesenjangan akses yang tinggi.',
+                method: 'Untuk setiap ruas jalan nasional yang terdaftar dalam basis data, dilakukan perhitungan jarak geografis (menggunakan fungsi ST_DistanceSphere) menuju titik SPKLU terdekat. Proses pencarian jarak terdekat menggunakan operator KNN (<->) yang dioptimalkan dengan indeks GiST pada kolom geometri spasial. Jarak yang dihasilkan disajikan dalam satuan kilometer dan divisualisasikan dalam bentuk gradasi warna pada peta untuk memberikan gambaran tingkat aksesibilitas setiap ruas jalan terhadap infrastruktur pengisian kendaraan listrik.',
+                data: 'Tabel jalan_nasional yang mencakup 3.306 ruas jalan nasional di seluruh Indonesia dan tabel sebaran_spklu yang mencakup 4.515 titik stasiun pengisian kendaraan listrik.',
+                accuracy: 'Perhitungan jarak menggunakan metode great-circle (jarak garis lurus di atas permukaan bola bumi), bukan jarak tempuh aktual melalui jaringan jalan. Metode ini cenderung mengestimasi aksesibilitas secara berlebihan (overestimate), khususnya di daerah pegunungan, wilayah kepulauan, dan daerah dengan kepadatan jalan yang rendah.'
+            },
+            distance: {
+                title: 'Jarak Antar SPKLU',
+                method: 'Setiap titik SPKLU dalam basis data dicari pasangan SPKLU lainnya yang memiliki jarak geografis terdekat melalui mekanisme self-join KNN dengan operator (<->) menggunakan fungsi ST_DistanceSphere. Seluruh hasil jarak antar stasiun ini kemudian dikelompokkan ke dalam beberapa kategori (bucket) jarak untuk memberikan gambaran mengenai distribusi jarak antar stasiun pengisian kendaraan listrik di seluruh Indonesia.',
+                data: 'Tabel sebaran_spklu yang mencakup 4.515 titik stasiun. Seluruh pasangan SPKLU dihitung jarak great-circle-nya untuk menentukan tetangga terdekat setiap stasiun.',
+                accuracy: 'Jarak yang dihitung merupakan jarak garis lurus (great-circle), bukan jarak tempuh aktual melalui jaringan jalan. Pada daerah dengan kepadatan SPKLU yang rendah, jarak antar stasiun dapat menjadi sangat besar dan kurang merepresentasikan kondisi aksesibilitas yang sebenarnya di lapangan.'
+            },
+            suggest: {
+                title: 'Saran Penambahan SPKLU',
+                method: 'Proses identifikasi lokasi rekomendasi penambahan SPKLU dilakukan dengan mencari ruas jalan nasional yang memiliki jarak lebih dari 10 kilometer menuju SPKLU terdekat. Setelah ruas jalan teridentifikasi, titik tengah ruas jalan tersebut dihitung menggunakan fungsi ST_LineInterpolatePoint(geom, 0.5) yang menghasilkan koordinat geografis yang berada tepat di posisi tengah ruas. Titik koordinat inilah yang diusulkan sebagai lokasi potensial untuk pembangunan SPKLU baru.',
+                data: 'Tabel jalan_nasional yang mencakup 3.306 ruas jalan nasional. Perlu dicatat bahwa data ini hanya mencakup jalan nasional dan tidak mencakup jalan tol, jalan provinsi, maupun jalan kabupaten/kota.',
+                accuracy: 'Lokasi yang direkomendasikan berada tepat di tengah ruas jalan nasional, sehingga belum tentu merupakan titik yang paling optimal. Analisis ini tidak mempertimbangkan faktor ketersediaan jaringan listrik, ketersediaan lahan, kepadatan penduduk di sekitar lokasi, maupun potensi permintaan (demand) dari pengguna kendaraan listrik.'
+            }
+        };
+
+        function showMethod(key) {
+            const m = analysisMethods[key];
+            if (!m) return;
+            const el = document.getElementById('method-detail');
+            if (!el) return;
+            let reasonHtml = '';
+            if (m.reason) {
+                reasonHtml = `<div style="grid-column:1/-1; background:rgba(96,239,255,0.04); border-left:2px solid var(--accent-cyan); padding:8px 12px; border-radius:0 8px 8px 0; font-size:13px;"><strong style="color:var(--accent-cyan);">Alasan Pemilihan:</strong><br>${m.reason}</div>`;
+            }
+            el.innerHTML = `
+                <div class="method-detail-box">
+                    <div style="font-weight:600; font-size:14px; color:var(--accent-cyan); margin-bottom:8px;">
+                        <i class="fas fa-flask"></i> ${m.title}
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+                        <div><strong style="color:var(--text-muted);">Metode:</strong><br>${m.method}</div>
+                        <div><strong style="color:var(--text-muted);">Data:</strong><br>${m.data}</div>
+                        <div style="grid-column:1/-1;"><strong style="color:var(--text-muted);">Akurasi:</strong><br>${m.accuracy}</div>
+                        ${reasonHtml}
+                    </div>
+                </div>
+            `;
+        }
+
     </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>window.gtranslateSettings = {"default_language":"id","native_language_names":true,"detect_browser_language":true,"wrapper_selector":".gtranslate_wrapper"}</script>
+    <script src="https://cdn.gtranslate.net/widgets/latest/dropdown.js" defer></script>
 </body>
 </html>

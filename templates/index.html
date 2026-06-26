@@ -58,18 +58,22 @@
     <!-- Leaflet Map library -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>window.L||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"><\/script>')</script>
     
     <!-- Leaflet MarkerCluster -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script>window.L.markerClusterGroup||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"><\/script>')</script>
     
     <!-- Chart.js for Advanced Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>window.Chart||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"><\/script>')</script>
     
     <!-- Leaflet Routing Machine for Routing -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script>window.L.Routing||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"><\/script>')</script>
 
     <style>
         :root {
@@ -83,6 +87,17 @@
             --shadow-glow: rgba(0, 255, 135, 0.25);
         }
 
+        .gtranslate_wrapper { display: inline-flex; align-items: center; vertical-align: middle; }
+        .gtranslate_wrapper select {
+            background: rgba(10,15,30,0.85); border: 1px solid var(--border-glass); border-radius: 8px;
+            color: var(--text-light); padding: 5px 12px 5px 32px; font-size: 12px; font-family: var(--font-body);
+            cursor: pointer; outline: none; width: auto; min-width: 100px; height: 36px;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2366aaff'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10' fill='%238892a4'%3E%3Cpath d='M2 3l3 3 3-3'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat; background-position: 8px center, right 8px center;
+            background-size: 16px, 10px;
+        }
+        .gtranslate_wrapper select:hover { border-color: rgba(102,170,255,0.3); }
         * {
             box-sizing: border-box;
             margin: 0;
@@ -123,7 +138,8 @@
             position: relative;
         }
 
-        #sidebar.collapsed .sidebar-header {
+        #sidebar.collapsed .sidebar-header,
+        #sidebar.collapsed .gtranslate_wrapper {
             display: none;
         }
 
@@ -316,6 +332,7 @@
             align-items: center;
             gap: 10px;
             font-weight: 500;
+            white-space: nowrap;
         }
 
         .layer-label i {
@@ -1641,9 +1658,12 @@
                      <h1 style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">Cas.in – WebGIS Sebaran SPKLU Teraktif Indonesia</h1>
                      <img src="/static/logo/LogoCasin.png" alt="Cas.in - Charging Indonesia" class="logo-image" />
                 </div>
-                <button id="about-project-btn" class="about-btn" title="Informasi & Fitur Proyek" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); color: var(--text-light); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; font-size: 14px; outline: none;">
-                    <i class="fas fa-info-circle" style="color: var(--accent-cyan);"></i>
-                </button>
+                <div style="display:flex; gap:6px; align-items:center; position:relative;">
+                    <div class="gtranslate_wrapper"></div>
+                    <button id="about-project-btn" class="about-btn" title="Informasi & Fitur Proyek" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-glass); color: var(--text-light); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; font-size: 14px; outline: none;">
+                        <i class="fas fa-info-circle" style="color: var(--accent-cyan);"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Search and Filter -->
@@ -2074,8 +2094,8 @@
                 const statsData = await statsRes.json();
                 statsDataCached = statsData; // Save cache globally
                 
-                // Fetch SPKLU Points
-                const spkluRes = await fetch('/api/spklu');
+                // Fetch SPKLU Points (all stations)
+                const spkluRes = await fetch('/api/spklu/all');
                 const spkluData = await spkluRes.json();
                 
                 allFeatures = spkluData.features;
@@ -2408,6 +2428,7 @@
                 // Store name by GID — safer than injecting strings into onclick
                 spkluNameStore[props.gid] = props.name;
 
+                const unitLabel = props.unit_count > 1 ? `${props.unit_count} unit` : '1 unit';
                 const popupContent = `
                     <div class="popup-card">
                         <span class="popup-tag">SPKLU Listrik</span>
@@ -2422,6 +2443,15 @@
                                 <i class="fas fa-map"></i>
                                 <span><strong>Provinsi:</strong> ${props.province || '-'}</span>
                             </div>
+                            <div class="popup-detail-item">
+                                <i class="fas fa-charging-station"></i>
+                                <span><strong>Unit:</strong> ${unitLabel}</span>
+                            </div>
+                            ${props.provider && props.provider !== 'unknown' ? `
+                            <div class="popup-detail-item">
+                                <i class="fas fa-building"></i>
+                                <span><strong>Provider:</strong> ${props.provider}</span>
+                            </div>` : ''}
                             <div class="popup-detail-item">
                                 <i class="fas fa-compass"></i>
                                 <span><strong>Koordinat:</strong> ${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)}</span>
@@ -3720,6 +3750,7 @@
                     });
                     
                     // Use spkluNameStore[gid] — safe for names with quotes/special chars
+                    const unitLabel = props.unit_count > 1 ? `${props.unit_count} unit` : '1 unit';
                     const popupContent = `
                         <div class="popup-card">
                             <span class="popup-tag" style="background: ${isVeryClose ? 'rgba(0, 255, 135, 0.15)' : 'rgba(255, 159, 0, 0.15)'}; border-color: ${isVeryClose ? 'rgba(0, 255, 135, 0.3)' : 'rgba(255, 159, 0, 0.3)'}; color: ${isVeryClose ? 'var(--accent-green)' : '#ff9f00'}; font-weight: 600;">
@@ -3736,6 +3767,15 @@
                                     <i class="fas fa-city"></i>
                                     <span><strong>Kota/Kab:</strong> ${props.city || '-'}</span>
                                 </div>
+                                <div class="popup-detail-item">
+                                    <i class="fas fa-charging-station"></i>
+                                    <span><strong>Unit:</strong> ${unitLabel}</span>
+                                </div>
+                                ${props.provider && props.provider !== 'unknown' ? `
+                                <div class="popup-detail-item">
+                                    <i class="fas fa-building"></i>
+                                    <span><strong>Provider:</strong> ${props.provider}</span>
+                                </div>` : ''}
                                 <div class="popup-detail-item">
                                     <i class="fas fa-compass"></i>
                                     <span><strong>Koordinat:</strong> ${item.latlng[0].toFixed(5)}, ${item.latlng[1].toFixed(5)}</span>
@@ -4071,5 +4111,7 @@
             </div>
         </div>
     </div>
+<script>window.gtranslateSettings = {"default_language":"id","native_language_names":true,"detect_browser_language":true,"wrapper_selector":".gtranslate_wrapper"}</script>
+<script src="https://cdn.gtranslate.net/widgets/latest/dropdown.js" defer></script>
 </body>
 </html>

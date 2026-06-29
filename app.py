@@ -102,6 +102,14 @@ def index():
         log.error("index(): %s", e)
         return err_response("Gagal memuat halaman utama", 500)
 
+@app.route('/robots.txt')
+def serve_robots():
+    return app.send_static_file('robots.txt')
+
+@app.route('/sitemap.xml')
+def serve_sitemap():
+    return app.send_static_file('sitemap.xml')
+
 @app.route('/api/spklu', methods=['GET'])
 @limiter.limit("30 per minute")
 def get_spklu():

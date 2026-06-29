@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://casin-asca2.vercel.app/sitemap.xml
+Sitemap: https://cas-in.nsurbanist.cloud/sitemap.xml

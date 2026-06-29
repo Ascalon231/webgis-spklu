@@ -8,6 +8,14 @@
   ],
   "routes": [
     {
+      "src": "/robots.txt",
+      "dest": "/static/robots.txt"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/static/sitemap.xml"
+    },
+    {
       "src": "/(.*)",
       "dest": "app.py"
     }

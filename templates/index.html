@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <title>Cas.in – Peta Sebaran SPKLU Teraktif di Indonesia</title>
     
     <!-- SEO Optimization Meta Tags -->
@@ -59,23 +60,20 @@
     
     <!-- Leaflet Map library -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
     <script>window.L||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"><\/script>')</script>
     
     <!-- Leaflet MarkerCluster -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js" defer></script>
     <script>window.L.markerClusterGroup||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"><\/script>')</script>
     
-    <!-- Chart.js for Advanced Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>window.Chart||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"><\/script>')</script>
+    <!-- Chart.js for Advanced Analytics (Will be lazy-loaded) -->
     
-    <!-- Leaflet Routing Machine for Routing -->
+    <!-- Leaflet Routing Machine for Routing (Will be lazy-loaded) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <script>window.L.Routing||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"><\/script>')</script>
+
 
     <style>
         :root {
@@ -1967,7 +1965,24 @@
 
     </div>
 
+
     <script>
+        function loadScript(src, integrity, callback) {
+            const existingScript = document.querySelector(`script[src="${src}"]`);
+            if (existingScript) {
+                if (callback) callback();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            if (integrity) script.integrity = integrity;
+            script.crossOrigin = 'anonymous';
+            script.onload = () => {
+                if (callback) callback();
+            };
+            document.head.appendChild(script);
+        }
+
         // Global variables
         let map;
         let markerCluster;
@@ -2618,7 +2633,28 @@
             
             // Trigger charts rendering if Analitik tab is opened
             if (targetTabId === 'tab-analitik') {
-                setTimeout(initAnalyticsCharts, 50);
+                if (!window.ChartLoaded) {
+                    loadScript('https://cdn.jsdelivr.net/npm/chart.js', null, () => {
+                        window.ChartLoaded = true;
+                        if (!window.L.Routing) { // Ensure L.Routing is not loaded yet if tab is switched quickly
+                             setTimeout(initAnalyticsCharts, 50);
+                        } else {
+                            setTimeout(initAnalyticsCharts, 50);
+                        }
+                    });
+                } else {
+                    setTimeout(initAnalyticsCharts, 50);
+                }
+            } else if (targetTabId === 'tab-rute') {
+                 if (!window.LeafletRoutingLoaded) {
+                    loadScript('https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js', null, () => {
+                        window.LeafletRoutingLoaded = true;
+                        setTimeout(initRouting, 50); // Re-initialize routing to apply the script
+                    });
+                } else {
+                    // Re-init routing just in case tab was switched and then back
+                    setTimeout(initRouting, 50);
+                }
             }
             
             // Disable picking mode if we leave the routing tab

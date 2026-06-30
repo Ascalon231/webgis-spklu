@@ -2063,8 +2063,8 @@
             routeSPKLULayerGroup = L.layerGroup().addTo(map);
             routeSegmentsLayerGroup = L.layerGroup().addTo(map);
             
-            // Initialize Routing Control
-            initRouting();
+            // Initialize Routing Control - DEFERRED until Rute tab is opened
+            // initRouting();
 
 
 
@@ -2636,23 +2636,18 @@
                 if (!window.ChartLoaded) {
                     loadScript('https://cdn.jsdelivr.net/npm/chart.js', null, () => {
                         window.ChartLoaded = true;
-                        if (!window.L.Routing) { // Ensure L.Routing is not loaded yet if tab is switched quickly
-                             setTimeout(initAnalyticsCharts, 50);
-                        } else {
-                            setTimeout(initAnalyticsCharts, 50);
-                        }
+                        setTimeout(initAnalyticsCharts, 50);
                     });
                 } else {
                     setTimeout(initAnalyticsCharts, 50);
                 }
             } else if (targetTabId === 'tab-rute') {
-                 if (!window.LeafletRoutingLoaded) {
+                if (!window.LeafletRoutingLoaded) {
                     loadScript('https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js', null, () => {
                         window.LeafletRoutingLoaded = true;
-                        setTimeout(initRouting, 50); // Re-initialize routing to apply the script
+                        setTimeout(initRouting, 50);
                     });
                 } else {
-                    // Re-init routing just in case tab was switched and then back
                     setTimeout(initRouting, 50);
                 }
             }
